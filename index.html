@@ -111,7 +111,7 @@ input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--pri)}
 .donutwrap{display:grid;grid-template-columns:130px minmax(0,1fr);gap:14px;align-items:center}
 .sug{display:flex;gap:12px;padding:12px;border-radius:14px;margin-bottom:8px;background:var(--bg);border:1px solid var(--line)}
 .sug .e{font-size:22px}
-.sug b{display:block;margin-bottom:2px}
+.sug>div>b{display:block;margin-bottom:2px}
 .sug p{margin:0;font-size:13px;color:var(--ink2)}
 .sug.w{background:var(--warnSoft);border-color:transparent}.sug.b{background:var(--badSoft);border-color:transparent}.sug.g{background:var(--goodSoft);border-color:transparent}
 .cc{border-radius:16px;padding:14px;color:#fff;margin-bottom:10px;position:relative;overflow:hidden}
@@ -169,6 +169,7 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
 <div class="tip" id="tip"></div>
 <div class="sheet-bg" id="dlgBg" style="z-index:80;align-items:center;padding:20px"><div class="sheet" id="dlg" style="border-radius:20px;max-width:420px"></div></div>
 
+<script src="config.js"></script>
 <script>
 'use strict';
 /* ============ Datos y utilidades ============ */
@@ -369,7 +370,7 @@ function stackBars(labels,series,opt){
   const lg=`<div class="row" style="gap:10px;flex-wrap:wrap;font-size:12px;color:var(--ink2);margin-bottom:6px">${series.map(s=>`<span class="row" style="gap:5px"><i style="width:10px;height:10px;border-radius:3px;background:${s.c};display:inline-block"></i>${esc(s.n)}</span>`).join('')}</div>`;
   return lg+`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(opt.label||'Gráfico apilado')}">${g}</svg>`}
 function compromisos(fut){const ser=[];
-  S.metodos.filter(x=>x.tipo==='credito').forEach(t=>{const rs=resumenesTarjeta(t,fut[0]+'-01',24);ser.push({n:t.nombre,vals:fut.map(f=>rs.filter(r=>r.venc.slice(0,7)===f).reduce((a,r)=>a+r.total,0))})});
+  S.metodos.filter(x=>x.tipo==='credito'&&!esAdic(x)).forEach(t=>{const rs=resumenesTarjeta(t,fut[0]+'-01',24);ser.push({n:t.nombre,vals:fut.map(f=>rs.filter(r=>r.venc.slice(0,7)===f).reduce((a,r)=>a+r.total,0))})});
   ser.push({n:'Préstamos',vals:fut.map(f=>S.prestamos.reduce((a,p)=>{const c=cuotaPrestamo(p,f);return a+(c?conv(+p.cuota,p.moneda,'ARS'):0)},0))});
   ser.push({n:'Fijos (sin tarjeta)',vals:fut.map(f=>S.fijos.reduce((a,x)=>{const m=met(x.metodo);if(m&&m.tipo==='credito')return a;return a+(fijoVence(x,f)?conv(+x.importe||0,x.moneda,'ARS'):0)},0))});
   return ser.filter(s=>s.vals.some(v=>v)).slice(0,8).map((s,i)=>Object.assign(s,{c:COLORS[i]}))}
@@ -409,14 +410,14 @@ function vInicio(){
     let split='';if(r&&(m.adicionales||[]).length){const g={};r.items.forEach(c=>g[c.pl||'']=(g[c.pl||'']||0)+c.importe);split=['',...m.adicionales].filter(p=>g[p]).map(p=>esc(plLbl(m,p))+' '+fmt(g[p])).join(' · ')}
     h+=`<div class="cc" style="background:${CARD_BG[m.estilo]||CARD_BG.def}" onclick="openTarjeta('${m.id}')">
       <div class="n">${esc(m.nombre)}</div><div class="s">Cierre actual ${fdia(cur.cierre)} · vence ${fdia(cur.venc)}</div>
-      <div class="v">${r?fmtAU(r.ars,r.usd):fmt(0)}</div><div class="s">${r?'Vence '+fdia(r.venc)+' · '+r.items.length+' consumos/cuotas'+(r.items.some(c=>c.est)?' (incluye estimados)':''):'Sin consumos pendientes'}</div>
+      <div class="v">${r?fmtAU(r.ars,r.usd):fmt(0)}</div><div class="s">${esAdic(m)?'🔗 Adicional · el resumen lo paga '+esc(m.compartida.titular)+' · ':''}${r?'Vence '+fdia(r.venc)+' · '+r.items.length+' consumos/cuotas'+(r.items.some(c=>c.est)?' (incluye estimados)':''):'Sin consumos pendientes'}</div>
       ${split?`<div class="s" style="margin-top:4px">💳 ${split}</div>`:''}
       ${r?`<span class="bdg">${dias<=0?'¡Hoy!':dias===1?'Mañana':'en '+dias+' días'}</span>`:''}</div>`});
   h+=`</div>`;
   h+=`<div class="card"><h2 data-h="categorias">🧩 Gastos por categoría${hi('categorias')}</h2>${cb.length?`<div class="donutwrap"><div>${donut(cb)}</div>${legend(cb)}</div>`:`<div class="empty"><div class="e">🌱</div>Todavía no hay gastos en ${mesN}.<br>Tocá <b>+</b> para cargar el primero.</div>`}</div>`;
   const cuentas=S.metodos.filter(m=>m.tipo!=='debito');
   h+=`<div class="card"><h2 data-h="cuentas">🏦 Mis cuentas y deudas${hi('cuentas')}</h2><div class="list">${cuentas.map(m=>{const cr=m.tipo==='credito';const v=sal[m.id],u=sal._usd[m.id]||0;
-     return`<div class="it" onclick="${cr?`openTarjeta('${m.id}')`:`openMetodo('${m.id}')`}"><div class="ico">${icoMet(m)}</div><div class="tx"><div class="t1">${esc(m.nombre)}</div><div class="t2">${TIPOS_MET[m.tipo]}${m.moneda==='USD'?' · USD':''}</div></div><div class="am ${cr?((v>0||u>0)?'neg':''):(v<0?'neg':'')}">${cr?fmtAU(v,u):fmt(v,m.moneda)}<small>${cr?'deuda total':'saldo'}</small></div></div>`}).join('')}
+     return`<div class="it" onclick="${cr?`openTarjeta('${m.id}')`:`openMetodo('${m.id}')`}"><div class="ico">${icoMet(m)}</div><div class="tx"><div class="t1">${esc(m.nombre)}</div><div class="t2">${TIPOS_MET[m.tipo]}${m.moneda==='USD'?' · USD':''}</div></div><div class="am ${cr?((v>0||u>0)?'neg':''):(v<0?'neg':'')}">${cr?fmtAU(v,u):fmt(v,m.moneda)}<small>${cr?(esAdic(m)?'tus consumos · paga '+esc(m.compartida.titular):'deuda total'):'saldo'}</small></div></div>`}).join('')}
    ${S.prestamos.map(p=>{const e=estadoPrestamo(p);return`<div class="it" onclick="openPrest('${p.id}')"><div class="ico">🏛️</div><div class="tx"><div class="t1">${esc(p.nombre)}</div><div class="t2">Préstamo · ${e.rest} cuotas restantes</div></div><div class="am neg">${fmt(e.cap!==null?e.cap:e.nominal,p.moneda)}<small>${e.cap!==null?'capital pendiente':'cuotas restantes'}</small></div></div>`}).join('')}</div>
    <div class="small mt">Saldos desde el "saldo inicial" de cada cuenta (Ajustes). La deuda de tarjeta incluye cuotas futuras.</div></div>`;
   const ult=[...S.movs].filter(m=>!m.ancla).sort(ordMov).slice(0,6);
@@ -433,7 +434,7 @@ function itemMov(mv){
   if(mv.tipo==='gasto'){const c=cat(mv.cat);ic=c.e;t1=mv.desc||c.nombre;t2=c.nombre+' · '+(met(mv.metodo)?.nombre||'?')+(mv.plastico?' ('+mv.plastico+')':'')+(mv.cuotas>1?' · '+mv.cuotas+' cuotas':'');am='-'+fmt(mv.importe,mv.moneda);cl='neg'}
   else if(mv.tipo==='ingreso'){const c=cat(mv.cat);ic=c.e;t1=mv.desc||c.nombre;t2='→ '+(met(mv.destino)?.nombre||'?');am='+'+fmt(mv.importe,mv.moneda);cl='pos'}
   else{const o=met(mv.origen),d=met(mv.destino);ic=d&&d.tipo==='efectivo'?'🏧':d&&d.tipo==='credito'?'✅':'🔁';t1=mv.desc||(d&&d.tipo==='efectivo'?'Extracción':d&&d.tipo==='credito'?'Pago de tarjeta':'Transferencia');t2=(o?.nombre||'?')+' → '+(d?.nombre||'?');am=fmt(mv.importe,mv.moneda);cl=''}
-  const conc=(mv._c?'<span class="chip g" style="font-size:10px;padding:1px 6px">✔</span> ':'')+(mv.est?'<span class="chip w" style="font-size:10px;padding:1px 6px">estimado</span> ':'')+(mv.fijo||mv.prest?'📌 ':'');
+  const conc=(mv.compartido?'<span class="chip" style="font-size:10px;padding:1px 6px">🔗 '+esc(mv.compartido.autor)+'</span> ':'')+(mv._c?'<span class="chip g" style="font-size:10px;padding:1px 6px">✔</span> ':'')+(mv.est?'<span class="chip w" style="font-size:10px;padding:1px 6px">estimado</span> ':'')+(mv.fijo||mv.prest?'📌 ':'');
   return`<div class="it" onclick="openMov('${mv.id}')"><div class="ico">${ic}</div><div class="tx"><div class="t1">${conc}${esc(t1)}</div><div class="t2">${esc(t2)}${mv.quien&&S.miembros.length>1?' · '+esc(mv.quien):''}</div></div><div class="am ${cl}">${am}<small>${fdia(mv.fecha)} ${mv.hora||''}</small></div></div>`;
 }
 
@@ -503,7 +504,7 @@ function corrienteMes(){return S.cfg.corriente!==undefined&&S.cfg.corriente!==nu
 function cashflow(n){const hoy=today(),ym0=hoy.slice(0,7);const C=corrienteMes();const inf=(+S.cfg.infl||0)/100;const out=[];let saldo=liquidezHoy();
   for(let k=0;k<n;k++){const ym=ymAdd(ym0,k);const fx=Math.pow(1+inf,k);const r={ym,ing:0,tarj:0,prest:0,fijos:0,corr:0,det:{ing:[],tarj:[],prest:[],fijos:[]}};
     cobrosMes(ym).forEach(c=>{if(c.estado==='cobrado')return;r.ing+=c.monto;r.det.ing.push([c.f.nombre,c.monto,c.fecha])});
-    S.metodos.filter(m=>m.tipo==='credito').forEach(m=>{resumenesTarjeta(m,ym+'-01',40).filter(x=>x.venc.slice(0,7)===ym).forEach(x=>{let v=x.total;
+    S.metodos.filter(m=>m.tipo==='credito'&&!esAdic(m)).forEach(m=>{resumenesTarjeta(m,ym+'-01',40).filter(x=>x.venc.slice(0,7)===ym).forEach(x=>{let v=x.total;
       if(k===0){const lim=ymd(new Date(parseYmd(x.venc).getTime()+12*864e5));v=Math.max(0,v-S.movs.filter(t=>t.tipo==='transf'&&t.destino===m.id&&t.fecha>x.cierre&&t.fecha<=lim).reduce((a,t)=>a+ars(t),0))}
       if(v>0){r.tarj+=v;r.det.tarj.push([m.nombre,v,x.venc])}})});
     S.prestamos.forEach(p=>{const c=cuotaPrestamo(p,ym);if(!c||pagoPrest(p,c.k))return;const v=conv(+p.cuota,p.moneda,'ARS');r.prest+=v;r.det.prest.push([p.nombre+' '+c.k+'/'+p.n,v,c.fecha])});
@@ -548,7 +549,7 @@ function detFlujo(i){const r=cashflow(FLH)[i];const sec=(t,e,arr,tot,cls)=>`<tr>
   $('#sheet').innerHTML=h;openSheet()}
 
 function agendaMes(ym){const hoy=today();const items=[];const est=(pagado,fecha)=>pagado?'pagado':fecha<hoy?'vencido':'pendiente';
-  S.metodos.filter(m=>m.tipo==='credito').forEach(m=>{resumenesTarjeta(m,ym+'-01',8).filter(r=>r.venc.slice(0,7)===ym).forEach(r=>{
+  S.metodos.filter(m=>m.tipo==='credito'&&!esAdic(m)).forEach(m=>{resumenesTarjeta(m,ym+'-01',8).filter(r=>r.venc.slice(0,7)===ym).forEach(r=>{
     const lim=ymd(new Date(parseYmd(r.venc).getTime()+12*864e5));const pg=S.movs.filter(x=>x.tipo==='transf'&&x.destino===m.id&&x.fecha>r.cierre&&x.fecha<=lim);
     const pa=pg.filter(x=>(x.moneda||'ARS')==='ARS').reduce((a,x)=>a+x.importe,0),pu=pg.filter(x=>x.moneda==='USD').reduce((a,x)=>a+x.importe,0);
     const ok=pg.length&&pa>=r.ars-1&&(r.usd<0.5||pu>=r.usd-0.5||pa>=r.total-1);
@@ -652,7 +653,7 @@ function vMovs(){
 /* ============ Formulario de movimiento ============ */
 let F=null;
 function openMov(id,pre){
-  const ex=id?S.movs.find(m=>m.id===id):null;
+  const ex=id?S.movs.find(m=>m.id===id):null;if(ex&&ex.compartido)return verCompartido(ex);
   F=ex?JSON.parse(JSON.stringify(ex)):Object.assign({id:null,tipo:'gasto',fecha:today(),hora:nowHM(),importe:'',moneda:'ARS',cuotas:1,cat:'',metodo:S.cfg.ultMet||'efe',destino:S.cfg.ultDest||'cgal',origen:'cgal',desc:'',quien:(S.cfg.ultQuien&&!esBaja(S.cfg.ultQuien)&&S.miembros.includes(S.cfg.ultQuien))?S.cfg.ultQuien:activos()[0]},pre||{});
   if(!F.metodo||!met(F.metodo))F.metodo=S.metodos[0]?.id;
   drawMov();openSheet();
@@ -702,11 +703,11 @@ function saveMov(){
   if(F.tipo==='ingreso'){o.cat=F.cat;o.destino=F.destino;S.cfg.ultDest=F.destino}
   if(F.tipo==='transf'){o.origen=F.origen;o.destino=F.destino}
   S.cfg.ultQuien=F.quien;
-  const ix=S.movs.findIndex(m=>m.id===o.id);if(ix>=0)S.movs[ix]=o;else S.movs.push(o);
+  const ix=S.movs.findIndex(m=>m.id===o.id);const prev=ix>=0?S.movs[ix]:null;if(ix>=0)S.movs[ix]=o;else S.movs.push(o);cloudTrack(prev,o);
   save();closeSheet();toast(F.id?'Actualizado ✔':'Guardado ✔');
   if(F._after)F._after();render();
 }
-async function delMov(){if(!await ask('¿Eliminar este movimiento?','Eliminar',1))return;const mv=S.movs.find(m=>m.id===F.id);if(mv&&mv.fijo&&mv.fijoMes)S.skip[mv.fijo+'|'+mv.fijoMes]=1;if(mv&&mv.ingP&&mv.ingMes)S.skip['i'+mv.ingP+'|'+mv.ingMes]=1;S.movs=S.movs.filter(m=>m.id!==F.id);save();closeSheet();render();toast('Eliminado')}
+async function delMov(){if(!await ask('¿Eliminar este movimiento?','Eliminar',1))return;const mv=S.movs.find(m=>m.id===F.id);cloudTrack(mv,null);if(mv&&mv.fijo&&mv.fijoMes)S.skip[mv.fijo+'|'+mv.fijoMes]=1;if(mv&&mv.ingP&&mv.ingMes)S.skip['i'+mv.ingP+'|'+mv.ingMes]=1;S.movs=S.movs.filter(m=>m.id!==F.id);save();closeSheet();render();toast('Eliminado')}
 function openSheet(){$('#sheetBg').classList.add('on');document.body.style.overflow='hidden'}
 function closeSheet(){$('#sheetBg').classList.remove('on');document.body.style.overflow=TOUR?'hidden':'';setTimeout(maybeTour,450)}
 
@@ -987,20 +988,22 @@ function vAjustes(){
    <button class="btn ghost full mt" onclick="exportCSV(true)">Exportar todo a CSV (Excel)</button>
    <button class="btn ghost full mt" onclick="demo()">Cargar datos de ejemplo</button>
    <button class="btn danger full mt" onclick="ask('¿Borrar TODOS los datos? No se puede deshacer.','Borrar todo',1).then(ok=>{if(ok){S=defaults();save();render()}})">Borrar todo</button></div>
+  <div class="card"><h2 data-h="compartidas">☁️ Tarjetas compartidas${hi('compartidas')}</h2><p class="small" style="margin-top:0">Para titulares con adicionales: los gastos del adicional te llegan al instante, con aviso en el teléfono.</p>
+   <button class="btn full" onclick="openCuenta()">${cloudOK()?(CL().nombre?'☁️ Mi cuenta compartida':'Crear cuenta / ingresar'):'Configurar'}</button></div>
   <div class="card"><h2>❓ Ayuda</h2><p class="small" style="margin-top:0">Tutorial, guía de cada pantalla y glosario de palabras financieras.</p><button class="btn full" onclick="openAyuda()">Abrir ayuda</button></div>
-  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v1.3 · ${S.movs.length} movimientos</div>`;
+  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v2.0 · ${S.movs.length} movimientos</div>`;
   return h;
 }
 let MF=null;
 function openMetodo(id){const m=id?met(id):null;MF=m?JSON.parse(JSON.stringify(m)):{id:null,nombre:'',tipo:'credito',cierre:25,venc:6,estilo:'visa',cierres:[],adicionales:[],saldoInicial:0,moneda:'ARS'};drawMetodo();openSheet()}
 function drawMetodo(){const m=MF;
-  let h=`<div class="grab"></div><h3>${m.id?'Editar':'Nueva'} vía de pago<button class="x" onclick="closeSheet()">✕</button></h3>
+  let h=`<div class="grab"></div><h3>${m.id?'Editar':'Nueva'} vía de pago<button class="x" onclick="closeSheet()">✕</button></h3>${esAdic(m)?`<div class="sug"><span class="e">🔗</span><div><b>Adicional de ${esc(m.compartida.titular||"el titular")}</b><p>Tus gastos con esta tarjeta le llegan al titular al instante. El cierre y el vencimiento los define el titular; el resumen lo paga él.</p></div></div>`:""}
   <label class="f"><span>Nombre</span><input class="in" value="${esc(m.nombre)}" placeholder="Ej: Visa Galicia" oninput="MF.nombre=this.value"></label>
   <label class="f"><span>Tipo</span><select class="in" onchange="MF.tipo=this.value;drawMetodo()">${Object.entries(TIPOS_MET).map(([k,l])=>`<option value="${k}" ${m.tipo===k?'selected':''}>${l}</option>`).join('')}</select></label>`;
   if(m.tipo==='credito'){h+=`<div class="two"><label class="f"><span>Día de cierre habitual</span><input class="in" type="number" min="1" max="31" value="${m.cierre}" onchange="MF.cierre=+this.value"></label><label class="f"><span>Día de vencimiento</span><input class="in" type="number" min="1" max="31" value="${m.venc}" onchange="MF.venc=+this.value"></label></div>
    <label class="f"><span>Se paga desde</span><select class="in" onchange="MF.cuentaPago=this.value">${S.metodos.filter(x=>x.tipo==='cuenta'||x.tipo==='billetera').map(x=>`<option value="${x.id}" ${m.cuentaPago===x.id?'selected':''}>${esc(x.nombre)}</option>`).join('')}</select></label>
    <label class="f"><span>Diseño</span><div class="hscroll">${Object.keys(CARD_BG).map(k=>`<button class="pill ${m.estilo===k?'on':''}" style="background:${CARD_BG[k]};color:#fff;border:${m.estilo===k?'3px solid var(--ink)':'0'}" onclick="MF.estilo='${k}';drawMetodo()">${k}</button>`).join('')}</div></label>
-   <label class="f"><span>Adicionales (el titular sos vos)</span></label><div class="hscroll" style="flex-wrap:wrap">${(m.adicionales||[]).map((a,i)=>`<button class="pill" onclick="MF.adicionales.splice(${i},1);drawMetodo()">💳 ${esc(a)} ✕</button>`).join('')}<button class="pill on" onclick="addAdic()">+ Adicional</button></div>
+   <label class="f"><span>Adicionales (el titular sos vos)</span></label><div class="hscroll" style="flex-wrap:wrap">${(m.adicionales||[]).map((a,i)=>`<button class="pill" onclick="MF.adicionales.splice(${i},1);drawMetodo()">💳 ${esc(a)} ✕</button>`).join('')}<button class="pill on" onclick="addAdic()">+ Adicional</button></div>${vincHtml(m)}
    <label class="f"><span>Cierres y vencimientos reales (los bancos los mueven cada mes)</span></label>
    ${(m.cierres||[]).map((o,i)=>`<div class="two mt"><input class="in" type="date" value="${o.cierre}" onchange="MF.cierres[${i}].cierre=this.value"><div class="row"><input class="in" type="date" value="${o.venc}" onchange="MF.cierres[${i}].venc=this.value"><button class="btn sm danger" onclick="MF.cierres.splice(${i},1);drawMetodo()">✕</button></div></div>`).join('')}
    <button class="btn sm sec mt" onclick="MF.cierres=MF.cierres||[];MF.cierres.push({cierre:'',venc:''});drawMetodo()">+ Cargar cierre de un mes</button>
@@ -1016,7 +1019,7 @@ function saveMetodo(){if(!MF.nombre.trim())return toast('Poné un nombre');
   if(MF.tipo==='debito'&&!MF.cuenta)MF.cuenta=S.metodos.find(x=>x.tipo==='cuenta')?.id;
   if(MF.tipo==='credito'&&!MF.cuentaPago)MF.cuentaPago=S.metodos.find(x=>x.tipo==='cuenta')?.id;
   MF.cierres=(MF.cierres||[]).filter(o=>o.cierre);
-  if(!MF.id){MF.id=uid();S.metodos.push(MF)}else S.metodos[S.metodos.findIndex(x=>x.id===MF.id)]=MF;save();closeSheet();render();toast('Guardado ✔')}
+  if(!MF.id){MF.id=uid();S.metodos.push(MF)}else S.metodos[S.metodos.findIndex(x=>x.id===MF.id)]=MF;save();cloudCardUpdate(MF.id);closeSheet();render();toast('Guardado ✔')}
 async function delMetodo(){const usado=S.movs.some(x=>[x.metodo,x.origen,x.destino].includes(MF.id));if(usado)return toast('Tiene movimientos: no se puede borrar');if(!await ask('¿Eliminar esta vía de pago?','Eliminar',1))return;S.metodos=S.metodos.filter(x=>x.id!==MF.id);save();closeSheet();render()}
 async function editCat(id){const c=id?S.cats.find(x=>x.id===id):null;
   const r=await new Promise(res=>{window._dr=v=>{dlgClose();res(v)};dlg(`<h3>${c?'Editar':'Nuevo'} concepto</h3><div class="row"><input class="in" id="dE" style="width:64px;text-align:center;font-size:22px" value="${esc(c?c.e:'🏷️')}"><input class="in" id="dN" placeholder="Nombre" value="${esc(c?c.nombre:'')}"></div>${c?'':`<div class="seg mt"><button class="on" id="dTg" onclick="this.classList.add('on');$('#dTi').classList.remove('on')">Gasto</button><button id="dTi" onclick="this.classList.add('on');$('#dTg').classList.remove('on')">Ingreso</button></div>`}<div class="actions">${c?`<button class="btn danger" style="flex:0 0 auto" onclick="_dr('DEL')">🗑</button>`:''}<button class="btn ghost" onclick="_dr(null)">Cancelar</button><button class="btn" onclick="_dr({n:$('#dN').value.trim(),e:$('#dE').value.trim()||'🏷️',t:$('#dTi')&&$('#dTi').classList.contains('on')?'ingreso':'gasto'})">Guardar</button></div>`)});
@@ -1129,11 +1132,172 @@ function confirmarImp(){const I=IMPP;const hoy=today();let c=0;
   (I.ing||[]).filter(r=>!r.err&&!r.dup).forEach(r=>{S.ingProy.push({id:uid(),nombre:String(r.concepto).trim(),cat:r.cat,destino:r.m.id,moneda:r.mon,importe:r.I,variable:r.var,dia:r.D,freq:r.F,desde:r.de,hasta:r.ha,auto:r.au,activo:true,creadoF:hoy});c++});
   generarAuto();save();closeSheet();go('agenda');toast(`Importados ${c} registros ✔`)}
 
+/* ============ Nube: tarjetas adicionales compartidas (Supabase) ============ */
+const CFG=()=>{const a=window.CC_CONFIG||{},b=S.cfg.cloudCfg||{};const o={};['supabaseUrl','supabaseKey','vapidPublic'].forEach(k=>o[k]=(b[k]||a[k]||'').trim());return o};
+const cloudOK=()=>{const c=CFG();return!!(c.supabaseUrl&&c.supabaseKey)};
+const CL=()=>{if(!S.cloud)S.cloud={vinculos:{},queue:[],lastPull:''};S.cloud.vinculos=S.cloud.vinculos||{};S.cloud.queue=S.cloud.queue||[];return S.cloud};
+const esAdic=m=>!!(m&&m.compartida&&m.compartida.rol==='adicional');
+let _sb=null,_sbUser=null,_rt=null,_flushing=false;
+async function sbc(){if(window._sbMock)return window._sbMock;if(_sb)return _sb;const c=CFG();if(!c.supabaseUrl||!c.supabaseKey)throw new Error('El servidor no está configurado');
+  const{createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');_sb=createClient(c.supabaseUrl,c.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'cc-auth'}});return _sb}
+async function sesion(){try{const sb=await sbc();const{data}=await sb.auth.getSession();_sbUser=data&&data.session?data.session.user:null}catch(e){_sbUser=null}return _sbUser}
+const errTxt=x=>{const m=String(x&&x.message||x||'');if(/Invalid login/i.test(m))return'Email o clave incorrectos';if(/already registered/i.test(m))return'Ese email ya tiene cuenta: usá Ingresar';if(/Failed to fetch|NetworkError|Load failed/i.test(m))return'Sin conexión con el servidor';return m};
+function vincDeMetodo(mid){const V=CL().vinculos;return Object.keys(V).find(k=>V[k].rol==='adicional'&&V[k].metodo===mid&&V[k].estado!=='revocado')||null}
+function cloudTrack(prev,o){const q=CL().queue;const pv=prev&&prev.tipo==='gasto'?vincDeMetodo(prev.metodo):null;const nv=o&&o.tipo==='gasto'?vincDeMetodo(o.metodo):null;
+  if(pv&&pv!==nv)q.push({op:'del',vinculo:pv,id:prev.id});
+  if(nv)q.push({op:'up',vinculo:nv,id:o.id,accion:prev&&pv===nv?'cambio':'alta'});
+  if(pv||nv){save();setTimeout(flushQueue,50)}}
+async function flushQueue(){const c=CL();if(_flushing||!c.queue.length||!cloudOK()||navigator.onLine===false)return;_flushing=true;
+  try{const sb=await sbc();const u=await sesion();if(!u)return;
+    while(c.queue.length){const op=c.queue[0];
+      if(op.op==='up'){const mv=S.movs.find(x=>x.id===op.id);
+        if(mv){const ct=cat(mv.cat);const{error}=await sb.from('gastos_compartidos').upsert({vinculo:op.vinculo,id:mv.id,fecha:mv.fecha,hora:mv.hora||null,importe:+mv.importe,moneda:mv.moneda||'ARS',cuotas:+mv.cuotas||1,categoria:mv.cat||null,cat_nombre:ct.nombre,cat_e:ct.e,descripcion:mv.desc||'',borrado:false});if(error)throw error}
+        else{c.queue.shift();continue}}
+      else{const{error}=await sb.from('gastos_compartidos').update({borrado:true}).eq('vinculo',op.vinculo).eq('id',op.id);if(error)throw error}
+      c.queue.shift();save();
+      try{sb.functions.invoke('notificar',{body:{vinculo:op.vinculo,id:op.id,accion:op.op==='del'?'baja':(op.accion||'alta')}}).catch(()=>{})}catch(e){}}
+    c.ultSync=new Date().toISOString();delete c.ultError;save();
+  }catch(e){c.ultError=errTxt(e);save()}finally{_flushing=false}}
+async function pull(silent){if(!cloudOK())return 0;let sb,u;try{sb=await sbc();u=await sesion()}catch(e){return 0}if(!u)return 0;const c=CL();
+  const{data:vs,error:e1}=await sb.from('vinculos').select('*');if(e1){c.ultError=errTxt(e1);save();return 0}
+  (vs||[]).forEach(v=>{let L=c.vinculos[v.id];
+    if(v.titular===u.id){if(!L){const m=S.metodos.find(x=>x.tipo==='credito'&&!esAdic(x)&&x.nombre===v.tarjeta);if(m)L=c.vinculos[v.id]={rol:'titular',metodo:m.id,nombre:v.adicional_nombre,tarjeta:v.tarjeta,codigo:v.codigo}}
+      if(L){L.estado=v.estado;L.codigo=v.codigo}}
+    else if(v.adicional===u.id){if(!L&&v.estado==='activo'){const id=crearTarjetaAdic(v,'');L=c.vinculos[v.id]={rol:'adicional',metodo:id,tarjeta:v.tarjeta,estado:v.estado}}
+      if(L){L.estado=v.estado;const m=met(L.metodo);if(m){if(v.cierre)m.cierre=v.cierre;if(v.venc)m.venc=v.venc;m.cierres=v.cierres||m.cierres||[];m.compartida.estado=v.estado}}}});
+  const mias=(vs||[]).filter(v=>v.titular===u.id&&c.vinculos[v.id]).map(v=>v.id);
+  if(!mias.length){save();return 0}
+  const{data:gs,error:e2}=await sb.from('gastos_compartidos').select('*').in('vinculo',mias).gte('actualizado',c.lastPull||'1970-01-01T00:00:00Z').order('actualizado',{ascending:true});
+  if(e2){c.ultError=errTxt(e2);save();return 0}
+  let nuevos=0,ult=c.lastPull||'';
+  (gs||[]).forEach(g=>{const L=c.vinculos[g.vinculo];if(!L)return;const lid='sh_'+String(g.vinculo).slice(0,8)+'_'+g.id;const ix=S.movs.findIndex(x=>x.id===lid);
+    if(g.borrado){if(ix>=0)S.movs.splice(ix,1)}
+    else{const nombre=L.nombre;if(!S.miembros.includes(nombre))S.miembros.push(nombre);const m=met(L.metodo);if(m&&!(m.adicionales||[]).includes(nombre)){m.adicionales=m.adicionales||[];m.adicionales.push(nombre)}
+      const mv={id:lid,tipo:'gasto',fecha:String(g.fecha).slice(0,10),hora:g.hora||'',importe:+g.importe,moneda:g.moneda||'ARS',cuotas:+g.cuotas||1,cat:S.cats.some(x=>x.id===g.categoria&&x.tipo==='gasto')?g.categoria:'otros',desc:g.descripcion||g.cat_nombre||'',metodo:L.metodo,plastico:nombre,quien:nombre,compartido:{vinculo:g.vinculo,autor:nombre,cat_nombre:g.cat_nombre,cat_e:g.cat_e}};
+      if(ix>=0)S.movs[ix]=mv;else{S.movs.push(mv);nuevos++}}
+    if(g.actualizado>ult)ult=g.actualizado});
+  c.lastPull=ult;c.ultSync=new Date().toISOString();delete c.ultError;save();
+  if(nuevos&&!silent)toast(`💳 ${nuevos} gasto${nuevos>1?'s':''} nuevo${nuevos>1?'s':''} de adicionales`);
+  if(gs&&gs.length){render();if($('#cuentaSheet'))openCuenta()}
+  return nuevos}
+async function suscribirRT(){if(_rt||window._sbMock)return;try{const sb=await sbc();const u=await sesion();if(!u)return;
+  _rt=sb.channel('cc-'+u.id).on('postgres_changes',{event:'*',schema:'public',table:'gastos_compartidos'},()=>pull()).on('postgres_changes',{event:'*',schema:'public',table:'vinculos'},()=>pull(true)).subscribe()}catch(e){}}
+let _cloudInit=false;
+async function cloudInit(){
+  const h=location.hash||'';const mm=h.match(/vincular=([A-Za-z0-9]{6})/);if(mm){S.cfg.codPend=mm[1].toUpperCase();save();try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}setTimeout(()=>{closeSheet();openCuenta()},900)}
+  if(!cloudOK())return;const c=CL();if(!c.nombre&&!Object.keys(c.vinculos).length&&!S.cfg.codPend)return;
+  if(!_cloudInit){_cloudInit=true;
+    window.addEventListener('online',()=>{flushQueue();pull()});
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){flushQueue();pull()}});
+    if(navigator.serviceWorker)navigator.serviceWorker.addEventListener('message',ev=>{if(ev.data&&ev.data.tipo==='sync')pull()});
+    setInterval(()=>{if(CL().queue.length)flushQueue()},60000)}
+  await flushQueue();await pull(true);suscribirRT()}
+function crearTarjetaAdic(v,titNombre){const id=uid();const t=v.tarjeta||'Tarjeta';
+  S.metodos.push({id,nombre:t+' (adicional)',tipo:'credito',cierre:v.cierre||25,venc:v.venc||5,cierres:v.cierres||[],estilo:/master/i.test(t)?'master':/icbc/i.test(t)?'icbc':/mercado/i.test(t)?'mp':/visa/i.test(t)?'visa':'def',adicionales:[],saldoInicial:0,compartida:{rol:'adicional',vinculo:v.id,titular:titNombre||v.titular_nombre||'el titular',estado:'activo'}});return id}
+const genCod=()=>{const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return[...crypto.getRandomValues(new Uint8Array(6))].map(x=>A[x%A.length]).join('')};
+async function invitar(mid,nombre){if(!cloudOK()){closeSheet();return openCuenta()}const u=await sesion();if(!u){toast('Primero creá tu cuenta o ingresá');closeSheet();return openCuenta()}
+  const m=met(mid);try{const sb=await sbc();const{data,error}=await sb.from('vinculos').insert({tarjeta:m.nombre,adicional_nombre:nombre,cierre:+m.cierre||null,venc:+m.venc||null,cierres:m.cierres||[],codigo:genCod()}).select().single();if(error)throw error;
+    CL().vinculos[data.id]={rol:'titular',metodo:mid,nombre,tarjeta:m.nombre,estado:'pendiente',codigo:data.codigo};save();if($('#sheetBg').classList.contains('on')&&MF&&MF.id===mid)drawMetodo();compartirCodigo(data.id);suscribirRT()}catch(x){toast('No se pudo crear la invitación: '+errTxt(x))}}
+function compartirCodigo(k){const v=CL().vinculos[k];if(!v)return;const url=location.origin+location.pathname+'#vincular='+v.codigo;
+  const txt=`Hola ${v.nombre}! Para que tus gastos con la ${v.tarjeta} adicional me lleguen al instante:\n1) Abrí este link en Chrome e instalá la app Cuentas Claras: ${url}\n2) Creá tu cuenta (Ajustes ⚙️ → Tarjetas compartidas).\n3) Si no se completa solo, ingresá el código: ${v.codigo}\nEl código vence en 7 días.`;
+  window._ccTxt=txt;
+  dlg(`<h3>🔗 Invitación para ${esc(v.nombre)}</h3><div style="text-align:center;font-size:32px;font-weight:800;letter-spacing:6px;margin:8px 0;color:var(--pri)">${v.codigo}</div><p class="small" style="margin-top:0">Mandale este mensaje. Cuando cree su cuenta y use el código, la tarjeta queda vinculada.</p><textarea class="in" rows="6" readonly>${esc(txt)}</textarea>
+   <div class="actions"><button class="btn ghost" onclick="dlgClose()">Cerrar</button><button class="btn sec" onclick="navigator.clipboard.writeText(_ccTxt).then(()=>toast('Copiado ✔'),()=>toast('Seleccioná el texto y copialo'))">Copiar</button><a class="btn" style="text-align:center;text-decoration:none" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">WhatsApp</a></div>`)}
+function vincHtml(m){if(!m||!m.id||esAdic(m)||m.tipo!=='credito')return'';const ad=m.adicionales||[];if(!ad.length)return'';const V=CL().vinculos;
+  return`<div class="small mt" style="font-weight:600;display:flex;align-items:center;gap:6px">Compartir en línea con el adicional ${hi('compartidas')}</div>${ad.map(a=>{const k=Object.keys(V).find(k=>V[k].rol==='titular'&&V[k].metodo===m.id&&V[k].nombre===a&&V[k].estado!=='revocado');const L=k&&V[k];
+    return`<div class="row mt" style="justify-content:space-between"><span>💳 ${esc(a)}</span>${L?(L.estado==='activo'?'<span class="chip g">🟢 en línea</span>':`<button class="btn sm sec" onclick="compartirCodigo('${k}')">⏳ Código ${L.codigo}</button>`):`<button class="btn sm" onclick="invitar('${m.id}','${esc(a)}')">🔗 Vincular</button>`}</div>`}).join('')}`}
+async function cloudCardUpdate(mid){const V=CL().vinculos;const ks=Object.keys(V).filter(k=>V[k].rol==='titular'&&V[k].metodo===mid&&V[k].estado!=='revocado');if(!ks.length)return;const m=met(mid);
+  try{const sb=await sbc();await sb.from('vinculos').update({tarjeta:m.nombre,cierre:+m.cierre||null,venc:+m.venc||null,cierres:m.cierres||[]}).in('id',ks);ks.forEach(k=>V[k].tarjeta=m.nombre);save()}catch(e){}}
+async function aceptarCodigo(cod){cod=String(cod||'').trim().toUpperCase();if(!/^[A-Z0-9]{6}$/.test(cod))return toast('El código tiene 6 letras/números');const u=await sesion();if(!u){S.cfg.codPend=cod;save();toast('Primero creá tu cuenta o ingresá');return openCuenta()}
+  try{const sb=await sbc();const{data,error}=await sb.rpc('aceptar_vinculo',{p_codigo:cod});if(error)throw error;const v=typeof data==='string'?JSON.parse(data):data;
+    if(CL().vinculos[v.id])throw new Error('Esta tarjeta ya estaba vinculada');
+    const id=crearTarjetaAdic(v,v.titular_nombre);CL().vinculos[v.id]={rol:'adicional',metodo:id,tarjeta:v.tarjeta,titular:v.titular_nombre,estado:'activo'};delete S.cfg.codPend;save();render();openCuenta();suscribirRT();
+    dlg(`<div class="slide"><div class="big">✅</div><h4>¡Tarjeta vinculada!</h4><p>Tu <b>${esc(v.tarjeta)}</b> adicional quedó conectada con <b>${esc(v.titular_nombre||'el titular')}</b>.</p><p>Cada gasto que cargues con esa tarjeta (elegila en <b>Vía de pago</b>) le llega al instante. Tus otros gastos siguen siendo <b>privados</b>.</p></div><div class="actions"><button class="btn" onclick="dlgClose()">Entendido</button></div>`)}catch(x){toast(errTxt(x))}}
+async function desvincular(k){if(!await ask('¿Desvincular esta tarjeta? Los gastos ya recibidos se conservan; los nuevos dejan de llegar.','Desvincular',1))return;
+  try{const sb=await sbc();const{error}=await sb.from('vinculos').update({estado:'revocado'}).eq('id',k);if(error)throw error;CL().vinculos[k].estado='revocado';save();openCuenta()}catch(x){toast(errTxt(x))}}
+async function salirVinculo(k){if(!await ask('¿Dejar de compartir esta tarjeta? Tus gastos nuevos ya no le llegarán al titular.','Dejar de compartir',1))return;
+  try{const sb=await sbc();const{error}=await sb.rpc('salir_vinculo',{p_id:k});if(error)throw error;const L=CL().vinculos[k];L.estado='revocado';const m=met(L.metodo);if(m&&m.compartida)m.compartida.estado='revocado';save();openCuenta()}catch(x){toast(errTxt(x))}}
+async function ccAuth(modo){const n=($('#ccN')?.value||'').trim(),e=($('#ccE').value||'').trim(),p=$('#ccP').value||'';
+  if(!/^\S+@\S+\.\S+$/.test(e))return toast('Revisá el email');if(p.length<6)return toast('La clave debe tener al menos 6 caracteres');if(modo==='alta'&&!n)return toast('Poné tu nombre');
+  const btn=document.querySelectorAll('#sheet .btn');btn.forEach(b=>b.disabled=true);
+  try{const sb=await sbc();let r;if(modo==='alta')r=await sb.auth.signUp({email:e,password:p,options:{data:{nombre:n}}});else r=await sb.auth.signInWithPassword({email:e,password:p});if(r.error)throw r.error;
+    if(!r.data.session){dlg(`<h3>📧 Revisá tu email</h3><p>Te mandamos un mail a <b>${esc(e)}</b> para confirmar la cuenta. Tocá el enlace y después volvé acá e ingresá.</p><div class="actions"><button class="btn" onclick="dlgClose()">Entendido</button></div>`);return}
+    const u=r.data.session.user;const nombre=n||u.user_metadata?.nombre||activos()[0];CL().nombre=nombre;await sb.from('perfiles').upsert({id:u.id,nombre});_sbUser=u;save();toast('¡Listo, '+nombre+'!');
+    _cloudInit=false;await cloudInit();if(S.cfg.codPend)await aceptarCodigo(S.cfg.codPend);else openCuenta()}
+  catch(x){toast(errTxt(x))}finally{btn.forEach(b=>b.disabled=false)}}
+async function ccLogout(){if(!await ask('¿Cerrar sesión en este teléfono? Las tarjetas compartidas dejan de sincronizar hasta que vuelvas a ingresar.','Cerrar sesión',1))return;
+  try{await borrarSub();const sb=await sbc();if(_rt){try{sb.removeChannel(_rt)}catch(e){}_rt=null}await sb.auth.signOut()}catch(e){}_sbUser=null;delete CL().nombre;save();openCuenta()}
+const b64u=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
+const u8b64u=u=>btoa(String.fromCharCode(...new Uint8Array(u))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+async function activarPush(){try{if(!('serviceWorker' in navigator)||!('PushManager' in window)||!navigator.serviceWorker.controller&&!(await navigator.serviceWorker.getRegistration()))throw new Error('Las notificaciones necesitan la app instalada desde Chrome (no funcionan dentro de otro visor).');
+    const vp=CFG().vapidPublic;if(!vp)throw new Error('Falta la clave pública de notificaciones en la configuración del servidor.');
+    const perm=await Notification.requestPermission();if(perm!=='granted')throw new Error('No diste permiso. Activalo en Ajustes del teléfono → Notificaciones → Chrome / Cuentas Claras.');
+    const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(vp)});
+    const j=sub.toJSON();const sb=await sbc();const{error}=await sb.from('push_subs').upsert({endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth});if(error)throw error;CL().push=true;save();toast('🔔 Notificaciones activadas');openCuenta()}
+  catch(x){dlg(`<h3>No se pudieron activar</h3><p class="small">${esc(errTxt(x))}</p><div class="actions"><button class="btn" onclick="dlgClose()">Cerrar</button></div>`)}}
+async function probarPush(){try{const sb=await sbc();const{data,error}=await sb.functions.invoke('notificar',{body:{test:true}});if(error)throw error;
+    const ok=(data&&data.enviados||[]).filter(x=>x===201||x===200).length;toast(ok?'Enviada: debería llegarte en segundos':(data&&data.enviados&&data.enviados.length?'El servicio de push respondió: '+data.enviados.join(', '):'No hay teléfonos suscriptos: tocá Activar'))}
+  catch(x){let m=errTxt(x);try{if(x.context&&x.context.json){const j=await x.context.json();m=j.error||m}}catch(_){}dlg(`<h3>No se pudo enviar</h3><p class="small">${esc(m)}</p><p class="small">Revisá en Supabase que la función <b>notificar</b> esté publicada y que los secretos VAPID_PRIVATE_JWK y VAPID_SUBJECT estén cargados (ver guía).</p><div class="actions"><button class="btn" onclick="dlgClose()">Cerrar</button></div>`)}}
+async function borrarSub(){try{const reg=await navigator.serviceWorker.getRegistration();const sub=reg&&await reg.pushManager.getSubscription();if(sub){const sb=await sbc();await sb.from('push_subs').delete().eq('endpoint',sub.endpoint);await sub.unsubscribe()}}catch(e){}CL().push=false}
+async function openCuenta(){const c=CL();const head=`<div class="grab"></div><h3 id="cuentaSheet">☁️ Tarjetas compartidas<button class="x" onclick="closeSheet()">✕</button></h3>`;
+  if(!cloudOK()){$('#sheet').innerHTML=head+`<div class="sug w"><span class="e">⚙️</span><div><b>Falta configurar el servidor</b><p>Lo hace <b>una sola vez el titular</b> de la tarjeta, siguiendo la guía incluida. Si sos el adicional, pedile al titular que te mande el link de la app: ya viene configurada.</p></div></div><button class="btn full mt" onclick="openServidor()">Configurar servidor (titular)</button>`;openSheet();return}
+  $('#sheet').innerHTML=head+'<div class="empty">Conectando…</div>';openSheet();const u=await sesion();let h=head;
+  if(!u){const alta=!c._modoIngreso;h+=`${S.cfg.codPend?`<div class="sug g"><span class="e">🔗</span><div><b>Te invitaron a compartir una tarjeta</b><p>Código <b>${esc(S.cfg.codPend)}</b>. Creá tu cuenta (o ingresá) y se vincula solo.</p></div></div>`:`<p class="small" style="margin-top:0">Necesitás una cuenta para compartir tarjetas adicionales. Tus otros datos siguen solo en tu teléfono.</p>`}
+    <div class="seg mt"><button class="${alta?'on':''}" onclick="CL()._modoIngreso=false;openCuenta()">Crear cuenta</button><button class="${!alta?'on':''}" onclick="CL()._modoIngreso=true;openCuenta()">Ya tengo cuenta</button></div>
+    ${alta?`<label class="f"><span>Tu nombre</span><input class="in" id="ccN" value="${esc(activos()[0]||'')}" autocomplete="name"></label>`:''}
+    <label class="f"><span>Email</span><input class="in" id="ccE" type="email" autocomplete="email" inputmode="email"></label>
+    <label class="f"><span>Clave (mínimo 6)</span><input class="in" id="ccP" type="password" autocomplete="${alta?'new-password':'current-password'}"></label>
+    <div class="actions"><button class="btn" onclick="ccAuth('${alta?'alta':'ingreso'}')">${alta?'Crear cuenta':'Ingresar'}</button></div>`;
+    $('#sheet').innerHTML=h;return}
+  const V=c.vinculos;const tit=Object.keys(V).filter(k=>V[k].rol==='titular');const adi=Object.keys(V).filter(k=>V[k].rol==='adicional');
+  const chip=L=>L.estado==='activo'?'<span class="chip g">🟢 en línea</span>':L.estado==='pendiente'?'<span class="chip w">⏳ esperando</span>':'<span class="chip b">desvinculada</span>';
+  const perm=typeof Notification!=='undefined'?Notification.permission:'no';
+  h+=`<div class="sug"><span class="e">👤</span><div><b>${esc(c.nombre||u.user_metadata?.nombre||'')}</b><p>${esc(u.email||'')}</p></div></div>
+  <h3 style="font-size:15px;margin-top:14px">💳 Como titular</h3>${tit.length?`<div class="list">${tit.map(k=>{const L=V[k];return`<div class="it" style="cursor:default"><div class="ico">💳</div><div class="tx"><div class="t1">${esc(L.tarjeta)} → ${esc(L.nombre)}</div><div class="t2">${chip(L)}</div></div>${L.estado==='pendiente'?`<button class="btn sm sec" onclick="compartirCodigo('${k}')">Código</button>`:''}${L.estado!=='revocado'?`<button class="btn sm ghost" onclick="desvincular('${k}')">Quitar</button>`:''}</div>`}).join('')}</div>`:''}
+  <p class="small">${tit.length?'':'Todavía no compartís ninguna. '}Para invitar: Ajustes → Vías de pago → tu tarjeta → agregá el adicional → <b>🔗 Vincular</b>.</p>
+  <h3 style="font-size:15px;margin-top:14px">🪪 Como adicional</h3>${adi.length?`<div class="list">${adi.map(k=>{const L=V[k];return`<div class="it" style="cursor:default"><div class="ico">🪪</div><div class="tx"><div class="t1">${esc(L.tarjeta)}</div><div class="t2">Titular: ${esc(L.titular||'')} · ${chip(L)}</div></div>${L.estado==='activo'?`<button class="btn sm ghost" onclick="salirVinculo('${k}')">Dejar</button>`:''}</div>`}).join('')}</div>`:''}
+  <div class="row mt"><input class="in" id="ccCod" placeholder="Código de 6 letras" maxlength="6" style="text-transform:uppercase;letter-spacing:3px" value="${esc(S.cfg.codPend||'')}"><button class="btn" onclick="aceptarCodigo($('#ccCod').value)">Vincular</button></div>
+  <h3 style="font-size:15px;margin-top:16px">🔔 Notificaciones en este teléfono</h3>
+  <p class="small" style="margin-top:0">${perm==='granted'&&c.push?'✅ Activadas.':'Activalas para enterarte al instante cuando el adicional carga un gasto.'}</p>
+  <div class="two"><button class="btn ${c.push&&perm==='granted'?'sec':''}" onclick="activarPush()">${c.push&&perm==='granted'?'Reactivar':'Activar'}</button><button class="btn sec" onclick="probarPush()">Probar</button></div>
+  <h3 style="font-size:15px;margin-top:16px">🔄 Sincronización</h3>
+  <table class="t"><tr><td>Última</td><td class="n">${c.ultSync?new Date(c.ultSync).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'}):'—'}</td></tr><tr><td>Pendientes de enviar</td><td class="n">${c.queue.length}</td></tr>${c.ultError?`<tr><td colspan="2" class="neg small">⚠ ${esc(c.ultError)}</td></tr>`:''}</table>
+  <div class="two mt"><button class="btn sec" onclick="(async()=>{await flushQueue();const n=await pull();toast(n?n+' gastos nuevos':'Todo al día ✔');openCuenta()})()">Sincronizar ahora</button><button class="btn ghost" onclick="ccLogout()">Cerrar sesión</button></div>
+  <button class="btn ghost full mt" onclick="openServidor()">⚙️ Configuración del servidor</button>`;
+  $('#sheet').innerHTML=h}
+function openServidor(){const c=CFG();const fromFile=!!(window.CC_CONFIG&&window.CC_CONFIG.supabaseUrl);
+  $('#sheet').innerHTML=`<div class="grab"></div><h3>⚙️ Servidor (solo titular)<button class="x" onclick="closeSheet()">✕</button></h3>
+  <p class="small" style="margin-top:0">${fromFile?'✅ La app ya trae la configuración desde <b>config.js</b>. Solo cambiá esto si sabés lo que hacés.':'Seguí la guía <b>GUIA-SERVIDOR</b> del paquete. Cuando tengas los datos de Supabase, pegalos acá y probá la conexión.'}</p>
+  <label class="f"><span>Project URL</span><input class="in" id="svU" placeholder="https://xxxx.supabase.co" value="${esc(c.supabaseUrl)}"></label>
+  <label class="f"><span>Publishable key (o anon key)</span><input class="in" id="svK" placeholder="sb_publishable_… o eyJ…" value="${esc(c.supabaseKey)}"></label>
+  <label class="f"><span>Clave pública de notificaciones</span><input class="in" id="svV" placeholder="Generala con el botón de abajo" value="${esc(c.vapidPublic)}"></label>
+  <button class="btn sec full mt" onclick="genVapid()">🔑 Generar claves de notificación</button>
+  <div class="two mt"><button class="btn sec" onclick="guardarServidor(true)">Probar conexión</button><button class="btn" onclick="guardarServidor(false)">Guardar</button></div>
+  <button class="btn ghost full mt" onclick="copiarConfig()">📄 Copiar config.js (para GitHub)</button>
+  <p class="small">Subir <b>config.js</b> a GitHub hace que tu familia reciba la app ya configurada: el adicional solo crea su cuenta.</p>`;openSheet()}
+async function guardarServidor(probar){S.cfg.cloudCfg={supabaseUrl:$('#svU').value.trim().replace(/\/+$/,''),supabaseKey:$('#svK').value.trim(),vapidPublic:$('#svV').value.trim()};save();_sb=null;_rt=null;
+  if(!probar){toast('Guardado');return openCuenta()}
+  try{const sb=await sbc();const{error}=await sb.from('vinculos').select('id',{head:true,count:'exact'});if(error)throw error;toast('✅ Conexión correcta con el servidor')}catch(x){dlg(`<h3>No conecta</h3><p class="small">${esc(errTxt(x))}</p><p class="small">Revisá la URL, la key y que hayas ejecutado el script SQL.</p><div class="actions"><button class="btn" onclick="dlgClose()">Cerrar</button></div>`)}}
+function copiarConfig(){const c=CFG();const t=`window.CC_CONFIG = {\n  supabaseUrl: ${JSON.stringify(c.supabaseUrl)},\n  supabaseKey: ${JSON.stringify(c.supabaseKey)},\n  vapidPublic: ${JSON.stringify(c.vapidPublic)}\n};\n`;window._ccTxt=t;
+  dlg(`<h3>📄 config.js</h3><p class="small">Reemplazá el contenido del archivo <b>config.js</b> de tu repositorio por esto:</p><textarea class="in" rows="7" readonly>${esc(t)}</textarea><div class="actions"><button class="btn ghost" onclick="dlgClose()">Cerrar</button><button class="btn" onclick="navigator.clipboard.writeText(_ccTxt).then(()=>toast('Copiado ✔'))">Copiar</button></div>`)}
+async function genVapid(){try{const k=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);const j=await crypto.subtle.exportKey('jwk',k.privateKey);const pub=u8b64u(await crypto.subtle.exportKey('raw',k.publicKey));
+    const priv=JSON.stringify({kty:j.kty,crv:j.crv,x:j.x,y:j.y,d:j.d});if($('#svV'))$('#svV').value=pub;S.cfg.cloudCfg=Object.assign({},S.cfg.cloudCfg,{vapidPublic:pub});save();window._ccPriv=priv;window._ccPub=pub;
+    dlg(`<h3>🔑 Claves de notificación</h3><p class="small" style="margin-top:0"><b>1. Privada</b> → Supabase → Edge Functions → Secrets → nombre <b>VAPID_PRIVATE_JWK</b>. No la compartas con nadie.</p><textarea class="in" rows="3" readonly>${esc(priv)}</textarea><button class="btn sm sec mt" onclick="navigator.clipboard.writeText(_ccPriv).then(()=>toast('Privada copiada'))">Copiar privada</button>
+     <p class="small"><b>2. Pública</b> → ya quedó cargada en el campo y va en config.js.</p><textarea class="in" rows="2" readonly>${esc(pub)}</textarea>
+     <div class="actions"><button class="btn" onclick="dlgClose()">Listo</button></div>`)}catch(x){toast('No se pudieron generar: '+x.message)}}
+function verCompartido(mv){const c=mv.compartido;const m=met(mv.metodo);
+  $('#sheet').innerHTML=`<div class="grab"></div><h3>Gasto de ${esc(c.autor)}<button class="x" onclick="closeSheet()">✕</button></h3>
+  <div class="sug"><span class="e">🔗</span><div><b>Lo cargó ${esc(c.autor)} desde su teléfono</b><p>Con la tarjeta adicional. Solo ${esc(c.autor)} puede modificarlo o borrarlo; los cambios te llegan solos.</p></div></div>
+  <div style="text-align:center;font-size:32px;font-weight:800;margin:14px 0" class="neg">${fmt2(mv.importe,mv.moneda)}</div>
+  <table class="t"><tr><td>Concepto</td><td>${esc((c.cat_e||cat(mv.cat).e)+' '+(c.cat_nombre||cat(mv.cat).nombre))}</td></tr><tr><td>Descripción</td><td>${esc(mv.desc||'—')}</td></tr><tr><td>Tarjeta</td><td>${esc(m?m.nombre:'?')} · plástico ${esc(mv.plastico)}</td></tr><tr><td>Fecha</td><td>${fdia(mv.fecha)} ${esc(mv.hora||'')}</td></tr><tr><td>Pago</td><td>${mv.cuotas>1?mv.cuotas+' cuotas de '+fmt2(mv.importe/mv.cuotas,mv.moneda):'Un pago'}</td></tr></table>
+  <div class="actions"><button class="btn" onclick="closeSheet()">Cerrar</button></div>`;openSheet()}
+
 /* ============ Ayuda: textos, tutorial, guías y glosario ============ */
 const hi=k=>`<button class="hi" onclick="event.stopPropagation();event.preventDefault();info('${k}')" aria-label="¿Qué es esto?">i</button>`;
 const HELP={
  buscar:['🔎 Buscar','Escribí parte del nombre (por ejemplo "coto" o "nafta") y la lista muestra solo esos movimientos del mes.'],
  filtros:['🎛️ Filtros','Tocá <b>Gastos</b>, <b>Ingresos</b> o <b>Transferencias</b> para ver solo ese tipo. La fila de abajo filtra por tarjeta o cuenta. Para corregir o borrar un movimiento, tocalo.'],
+ compartidas:['🔗 Tarjetas compartidas','Sirve si tenés <b>tarjetas adicionales</b> (por ejemplo, la de tu pareja).<br><br>1. El <b>titular</b> entra a la tarjeta (Ajustes → Vías de pago), toca <b>🔗 Vincular</b> al lado del adicional y le manda el código por WhatsApp.<br>2. El <b>adicional</b> instala la app, crea su cuenta e ingresa el código.<br><br>Desde ese momento, cada gasto que el adicional carga con esa tarjeta <b>le aparece al titular al instante</b>, con una notificación. El resto de los gastos de cada uno sigue siendo privado.'],
  kpis:['📊 Tu mes en números','<b>Ingresos</b>: toda la plata que entró (sueldo, cobros). <b>Gastos</b>: todo lo que gastaste. <b>Resultado</b>: la diferencia. Si es verde, ese mes ahorraste; si es rojo, gastaste más de lo que entró.<br><br>El cuadro <b>Efectivo sin registrar</b> avisa si sacaste plata del cajero y no anotaste en qué la usaste.<br><br>Para ver otro mes usá las flechas ‹ › de arriba.'],
  compromisos:['📌 Compromisos del mes','Son los pagos que <b>sí o sí</b> tenés que hacer este mes: resúmenes de tarjeta, cuotas de préstamos y gastos fijos (colegio, luz, impuestos…).<br><br>La barra verde muestra cuánto ya pagaste. Tocá esta sección para ir a la <b>Agenda</b> y marcar lo que vas pagando.'],
  cashflow:['💧 Cashflow (flujo de fondos)','Es una <b>proyección de cuánta plata vas a tener</b> a fin de cada mes.<br><br>La cuenta es simple:<br><b>lo que tenés hoy + lo que vas a cobrar − lo que vas a pagar = lo que te va a quedar</b>.<br><br>Si la línea baja de cero, te avisa con tiempo para que te organices (postergar una compra, no tomar cuotas nuevas, etc.).'],
@@ -1198,7 +1362,7 @@ const TOURS={
  flujo:['flHor','ingEgr','saldoProy','detalle','supuestos'],
  conc:['concTabs','impRes','efeMes','arqueo'],
  anal:['analFlujo','ingGas','comprom','catProm','propuestas'],
- ajustes:['vias','conceptos','integrantes','prefs','respaldo'],
+ ajustes:['vias','conceptos','integrantes','prefs','compartidas','respaldo'],
  form:[['[data-h=fTipo]','1️⃣ ¿Qué querés anotar?','<b>Gasto</b>: pagaste algo. <b>Ingreso</b>: te entró plata. <b>Extracción / Transf.</b>: moviste plata entre tus cuentas (por ejemplo, sacaste del cajero).'],
   ['#fImp','2️⃣ Importe','Escribí cuánto fue. Si fue en dólares, cambiá ARS por USD arriba.'],
   ['[data-h=fVia]','3️⃣ ¿Con qué pagaste?','Tarjeta, cuenta, Mercado Pago o efectivo. Deslizá hacia el costado para ver todas.'],
@@ -1313,6 +1477,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(S.c
 window.addEventListener('popstate',()=>{if($('#sheetBg').classList.contains('on'))closeSheet()});
 generarAuto();
 render();
+cloudInit();
 if(!S.movs.length&&!S.cfg.bienvenida){S.cfg.bienvenida=1;save();setTimeout(()=>{$('#sheet').innerHTML=`<div class="grab"></div><div class="slide"><div class="big">👋</div><h4>¡Bienvenido a Cuentas Claras!</h4><p style="text-align:center">Tu plata ordenada, sin saber de finanzas.<br>¿Querés ver cómo funciona? Son 2 minutos.</p></div><div class="actions" style="flex-direction:column"><button class="btn" onclick="openTutorial(0)">📘 Ver el tutorial</button><button class="btn sec" onclick="closeSheet();demo()">👀 Probar con datos de ejemplo</button><button class="btn ghost" onclick="closeSheet()">Empezar directamente</button></div>`;openSheet()},300)}
 </script>
 </body>

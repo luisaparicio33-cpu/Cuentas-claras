@@ -991,7 +991,7 @@ function vAjustes(){
   <div class="card"><h2 data-h="compartidas">☁️ Tarjetas compartidas${hi('compartidas')}</h2><p class="small" style="margin-top:0">Para titulares con adicionales: los gastos del adicional te llegan al instante, con aviso en el teléfono.</p>
    <button class="btn full" onclick="openCuenta()">${cloudOK()?(CL().nombre?'☁️ Mi cuenta compartida':'Crear cuenta / ingresar'):'Configurar'}</button></div>
   <div class="card"><h2>❓ Ayuda</h2><p class="small" style="margin-top:0">Tutorial, guía de cada pantalla y glosario de palabras financieras.</p><button class="btn full" onclick="openAyuda()">Abrir ayuda</button></div>
-  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v2.0.1 · ${S.movs.length} movimientos</div>`;
+  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v2.0.3 · ${S.movs.length} movimientos</div>`;
   return h;
 }
 let MF=null;
@@ -1142,7 +1142,8 @@ let _sb=null,_sbUser=null,_rt=null,_flushing=false;
 async function sbc(){if(window._sbMock)return window._sbMock;if(_sb)return _sb;const c=CFG();if(!c.supabaseUrl||!c.supabaseKey)throw new Error('El servidor no está configurado');
   const{createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');_sb=createClient(c.supabaseUrl,c.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'cc-auth'}});return _sb}
 async function sesion(){try{const sb=await sbc();const{data}=await sb.auth.getSession();_sbUser=data&&data.session?data.session.user:null}catch(e){_sbUser=null}return _sbUser}
-const errTxt=x=>{const m=String(x&&x.message||x||'');if(/Invalid login/i.test(m))return'Email o clave incorrectos';if(/already registered/i.test(m))return'Ese email ya tiene cuenta: usá Ingresar';if(/Failed to fetch|NetworkError|Load failed/i.test(m))return'Sin conexión con el servidor';return m};
+const errTxt=x=>{const m=String(x&&x.message||x||'');if(/permission denied|42501/i.test(m)||(x&&x.code==='42501'))return'Faltan permisos en el servidor ('+m+'). Ejecutá servidor/permisos.sql en Supabase → SQL Editor.';if(/schema cache|does not exist/i.test(m))return'El servidor no tiene las tablas ('+m+'). Ejecutá servidor/supabase.sql en Supabase → SQL Editor.';if(/Invalid login/i.test(m))return'Email o clave incorrectos';if(/already registered/i.test(m))return'Ese email ya tiene cuenta: usá Ingresar';if(/Failed to fetch|NetworkError|Load failed/i.test(m))return'Sin conexión con el servidor';return m};
+function errDlg(t,x){const m=errTxt(x);window._ccTxt=t+': '+m+(x&&x.code?' [código '+x.code+']':'');dlg(`<h3>⚠️ ${esc(t)}</h3><p style="font-size:14px;line-height:1.5">${esc(m)}</p>${x&&x.code?`<p class="small">Código: ${esc(x.code)}</p>`:''}<div class="actions"><button class="btn ghost" onclick="navigator.clipboard.writeText(_ccTxt).then(()=>toast('Copiado ✔'))">Copiar error</button><button class="btn" onclick="dlgClose()">Cerrar</button></div>`)}
 function vincDeMetodo(mid){const V=CL().vinculos;return Object.keys(V).find(k=>V[k].rol==='adicional'&&V[k].metodo===mid&&V[k].estado!=='revocado')||null}
 function cloudTrack(prev,o){const q=CL().queue;const pv=prev&&prev.tipo==='gasto'?vincDeMetodo(prev.metodo):null;const nv=o&&o.tipo==='gasto'?vincDeMetodo(o.metodo):null;
   if(pv&&pv!==nv)q.push({op:'del',vinculo:pv,id:prev.id});
@@ -1185,21 +1186,24 @@ async function suscribirRT(){if(_rt||window._sbMock)return;try{const sb=await sb
   _rt=sb.channel('cc-'+u.id).on('postgres_changes',{event:'*',schema:'public',table:'gastos_compartidos'},()=>pull()).on('postgres_changes',{event:'*',schema:'public',table:'vinculos'},()=>pull(true)).subscribe()}catch(e){}}
 let _cloudInit=false;
 async function cloudInit(){
-  const h=location.hash||'';const mm=h.match(/vincular=([A-Za-z0-9]{6})/);if(mm){S.cfg.codPend=mm[1].toUpperCase();save();try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}setTimeout(()=>{closeSheet();openCuenta()},900)}
+  const hp=new URLSearchParams((location.hash||'').replace(/^#/,''));const hc=hp.get('vincular');
+  if(hp.get('u')&&hp.get('k')){const cur=CFG();if(!cur.supabaseUrl||cleanUrl(hp.get('u'))!==cur.supabaseUrl){S.cfg.cloudCfg={supabaseUrl:cleanUrl(hp.get('u')),supabaseKey:hp.get('k'),vapidPublic:hp.get('v')||cur.vapidPublic||''};_sb=null;save()}}
+  const mm=hc&&/^[A-Za-z0-9]{6}$/.test(hc)?[0,hc]:null;if(mm){S.cfg.codPend=mm[1].toUpperCase();save();try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}setTimeout(()=>{closeSheet();openCuenta()},900)}
   if(!cloudOK())return;const c=CL();if(!c.nombre&&!Object.keys(c.vinculos).length&&!S.cfg.codPend)return;
   if(!_cloudInit){_cloudInit=true;
     window.addEventListener('online',()=>{flushQueue();pull()});
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){flushQueue();pull()}});
     if(navigator.serviceWorker)navigator.serviceWorker.addEventListener('message',ev=>{if(ev.data&&ev.data.tipo==='sync')pull()});
     setInterval(()=>{if(CL().queue.length)flushQueue()},60000)}
+  try{const u=await sesion();if(u&&CL().nombre){const sb=await sbc();await sb.from('perfiles').upsert({id:u.id,nombre:CL().nombre})}}catch(e){}
   await flushQueue();await pull(true);suscribirRT()}
 function crearTarjetaAdic(v,titNombre){const id=uid();const t=v.tarjeta||'Tarjeta';
   S.metodos.push({id,nombre:t+' (adicional)',tipo:'credito',cierre:v.cierre||25,venc:v.venc||5,cierres:v.cierres||[],estilo:/master/i.test(t)?'master':/icbc/i.test(t)?'icbc':/mercado/i.test(t)?'mp':/visa/i.test(t)?'visa':'def',adicionales:[],saldoInicial:0,compartida:{rol:'adicional',vinculo:v.id,titular:titNombre||v.titular_nombre||'el titular',estado:'activo'}});return id}
 const genCod=()=>{const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return[...crypto.getRandomValues(new Uint8Array(6))].map(x=>A[x%A.length]).join('')};
 async function invitar(mid,nombre){if(!cloudOK()){closeSheet();return openCuenta()}const u=await sesion();if(!u){toast('Primero creá tu cuenta o ingresá');closeSheet();return openCuenta()}
   const m=met(mid);try{const sb=await sbc();const{data,error}=await sb.from('vinculos').insert({tarjeta:m.nombre,adicional_nombre:nombre,cierre:+m.cierre||null,venc:+m.venc||null,cierres:m.cierres||[],codigo:genCod()}).select().single();if(error)throw error;
-    CL().vinculos[data.id]={rol:'titular',metodo:mid,nombre,tarjeta:m.nombre,estado:'pendiente',codigo:data.codigo};save();if($('#sheetBg').classList.contains('on')&&MF&&MF.id===mid)drawMetodo();compartirCodigo(data.id);suscribirRT()}catch(x){toast('No se pudo crear la invitación: '+errTxt(x))}}
-function compartirCodigo(k){const v=CL().vinculos[k];if(!v)return;const url=location.origin+location.pathname+'#vincular='+v.codigo;
+    CL().vinculos[data.id]={rol:'titular',metodo:mid,nombre,tarjeta:m.nombre,estado:'pendiente',codigo:data.codigo};save();if($('#sheetBg').classList.contains('on')&&MF&&MF.id===mid)drawMetodo();compartirCodigo(data.id);suscribirRT()}catch(x){errDlg('No se pudo crear la invitación',x)}}
+function compartirCodigo(k){const v=CL().vinculos[k];if(!v)return;const cf=CFG();const url=location.origin+location.pathname+'#vincular='+v.codigo+(cf.supabaseUrl?'&u='+encodeURIComponent(cf.supabaseUrl)+'&k='+encodeURIComponent(cf.supabaseKey)+(cf.vapidPublic?'&v='+encodeURIComponent(cf.vapidPublic):''):'');
   const txt=`Hola ${v.nombre}! Para que tus gastos con la ${v.tarjeta} adicional me lleguen al instante:\n1) Abrí este link en Chrome e instalá la app Cuentas Claras: ${url}\n2) Creá tu cuenta (Ajustes ⚙️ → Tarjetas compartidas).\n3) Si no se completa solo, ingresá el código: ${v.codigo}\nEl código vence en 7 días.`;
   window._ccTxt=txt;
   dlg(`<h3>🔗 Invitación para ${esc(v.nombre)}</h3><div style="text-align:center;font-size:32px;font-weight:800;letter-spacing:6px;margin:8px 0;color:var(--pri)">${v.codigo}</div><p class="small" style="margin-top:0">Mandale este mensaje. Cuando cree su cuenta y use el código, la tarjeta queda vinculada.</p><textarea class="in" rows="6" readonly>${esc(txt)}</textarea>
@@ -1213,7 +1217,7 @@ async function aceptarCodigo(cod){cod=String(cod||'').trim().toUpperCase();if(!/
   try{const sb=await sbc();const{data,error}=await sb.rpc('aceptar_vinculo',{p_codigo:cod});if(error)throw error;const v=typeof data==='string'?JSON.parse(data):data;
     if(CL().vinculos[v.id])throw new Error('Esta tarjeta ya estaba vinculada');
     const id=crearTarjetaAdic(v,v.titular_nombre);CL().vinculos[v.id]={rol:'adicional',metodo:id,tarjeta:v.tarjeta,titular:v.titular_nombre,estado:'activo'};delete S.cfg.codPend;save();render();openCuenta();suscribirRT();
-    dlg(`<div class="slide"><div class="big">✅</div><h4>¡Tarjeta vinculada!</h4><p>Tu <b>${esc(v.tarjeta)}</b> adicional quedó conectada con <b>${esc(v.titular_nombre||'el titular')}</b>.</p><p>Cada gasto que cargues con esa tarjeta (elegila en <b>Vía de pago</b>) le llega al instante. Tus otros gastos siguen siendo <b>privados</b>.</p></div><div class="actions"><button class="btn" onclick="dlgClose()">Entendido</button></div>`)}catch(x){toast(errTxt(x))}}
+    dlg(`<div class="slide"><div class="big">✅</div><h4>¡Tarjeta vinculada!</h4><p>Tu <b>${esc(v.tarjeta)}</b> adicional quedó conectada con <b>${esc(v.titular_nombre||'el titular')}</b>.</p><p>Cada gasto que cargues con esa tarjeta (elegila en <b>Vía de pago</b>) le llega al instante. Tus otros gastos siguen siendo <b>privados</b>.</p></div><div class="actions"><button class="btn" onclick="dlgClose()">Entendido</button></div>`)}catch(x){errDlg('No se pudo vincular',x)}}
 async function desvincular(k){if(!await ask('¿Desvincular esta tarjeta? Los gastos ya recibidos se conservan; los nuevos dejan de llegar.','Desvincular',1))return;
   try{const sb=await sbc();const{error}=await sb.from('vinculos').update({estado:'revocado'}).eq('id',k);if(error)throw error;CL().vinculos[k].estado='revocado';save();openCuenta()}catch(x){toast(errTxt(x))}}
 async function salirVinculo(k){if(!await ask('¿Dejar de compartir esta tarjeta? Tus gastos nuevos ya no le llegarán al titular.','Dejar de compartir',1))return;
@@ -1241,7 +1245,7 @@ async function probarPush(){try{const sb=await sbc();const{data,error}=await sb.
   catch(x){let m=errTxt(x);try{if(x.context&&x.context.json){const j=await x.context.json();m=j.error||m}}catch(_){}dlg(`<h3>No se pudo enviar</h3><p class="small">${esc(m)}</p><p class="small">Revisá en Supabase que la función <b>notificar</b> esté publicada y que los secretos VAPID_PRIVATE_JWK y VAPID_SUBJECT estén cargados (ver guía).</p><div class="actions"><button class="btn" onclick="dlgClose()">Cerrar</button></div>`)}}
 async function borrarSub(){try{const reg=await navigator.serviceWorker.getRegistration();const sub=reg&&await reg.pushManager.getSubscription();if(sub){const sb=await sbc();await sb.from('push_subs').delete().eq('endpoint',sub.endpoint);await sub.unsubscribe()}}catch(e){}CL().push=false}
 async function openCuenta(){const c=CL();const head=`<div class="grab"></div><h3 id="cuentaSheet">☁️ Tarjetas compartidas<button class="x" onclick="closeSheet()">✕</button></h3>`;
-  if(!cloudOK()){$('#sheet').innerHTML=head+`<div class="sug w"><span class="e">⚙️</span><div><b>Falta configurar el servidor</b><p>Lo hace <b>una sola vez el titular</b> de la tarjeta, siguiendo la guía incluida. Si sos el adicional, pedile al titular que te mande el link de la app: ya viene configurada.</p></div></div><button class="btn full mt" onclick="openServidor()">Configurar servidor (titular)</button>`;openSheet();return}
+  if(!cloudOK()){$('#sheet').innerHTML=head+`<div class="sug w"><span class="e">⚙️</span><div><b>Falta configurar el servidor</b><p>Lo hace <b>una sola vez el titular</b> de la tarjeta, siguiendo la guía incluida. Si sos el <b>adicional</b>: abrí el link de invitación que te mandó el titular por WhatsApp (en Chrome); ese link trae la configuración. Si ya lo abriste y seguís viendo esto, pedile que te reenvíe una invitación nueva.</p></div></div><button class="btn full mt" onclick="openServidor()">Configurar servidor (titular)</button>`;openSheet();return}
   $('#sheet').innerHTML=head+'<div class="empty">Conectando…</div>';openSheet();const u=await sesion();let h=head;
   if(!u){const alta=!c._modoIngreso;h+=`${S.cfg.codPend?`<div class="sug g"><span class="e">🔗</span><div><b>Te invitaron a compartir una tarjeta</b><p>Código <b>${esc(S.cfg.codPend)}</b>. Creá tu cuenta (o ingresá) y se vincula solo.</p></div></div>`:`<p class="small" style="margin-top:0">Necesitás una cuenta para compartir tarjetas adicionales. Tus otros datos siguen solo en tu teléfono.</p>`}
     <div class="seg mt"><button class="${alta?'on':''}" onclick="CL()._modoIngreso=false;openCuenta()">Crear cuenta</button><button class="${!alta?'on':''}" onclick="CL()._modoIngreso=true;openCuenta()">Ya tengo cuenta</button></div>

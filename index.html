@@ -199,7 +199,7 @@ function defaults(){
     ['sueldo','Sueldo','💼'],['honor','Honorarios','🧑‍💼'],['inv','Inversiones','📈'],['alq','Alquileres','🏘️'],['reint','Reintegros','↩️'],['oting','Otros ingresos','💰']
   ].map(([id,nombre,e])=>({id,nombre,e,tipo:'ingreso'}))),
   miembros:['Yo'],
-  movs:[],resumenes:[],fijos:[],prestamos:[],skip:{}};
+  movs:[],resumenes:[],fijos:[],prestamos:[],ingProy:[],skip:{}};
 }
 function migrate(d){const def=defaults();for(const k in def)if(d[k]===undefined)d[k]=def[k];d.cfg=Object.assign({},def.cfg,d.cfg);
   def.cats.filter(c=>NEW_CATS.includes(c.id)).forEach(c=>{if(!d.cats.some(x=>x.id===c.id))d.cats.splice(d.cats.findIndex(x=>x.tipo==='ingreso'),0,c)});
@@ -304,12 +304,12 @@ function moveMes(k){const[y,m]=MES_ACT.split('-').map(Number);const[a,b]=addM(y,
 function go(v){VIEW=v;window.scrollTo(0,0);render()}
 function render(){
   S.movs.forEach(m=>delete m._c);S.resumenes.forEach(r=>{try{conciliar(r)}catch(e){}});
-  document.querySelectorAll('nav.bot button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===VIEW));
+  document.querySelectorAll('nav.bot button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===(VIEW==='flujo'?'agenda':VIEW)));
   $('#mesLbl').textContent=lblMes(MES_ACT);
-  $('#mesSel').style.visibility=(VIEW==='ajustes'||VIEW==='conc')?'hidden':'visible';
-  const V={inicio:vInicio,movs:vMovs,agenda:vAgenda,conc:vConc,anal:vAnal,ajustes:vAjustes}[VIEW]||vInicio;
+  $('#mesSel').style.visibility=(VIEW==='ajustes'||VIEW==='conc'||VIEW==='flujo')?'hidden':'visible';
+  const V={inicio:vInicio,movs:vMovs,agenda:vAgenda,flujo:vFlujo,conc:vConc,anal:vAnal,ajustes:vAjustes}[VIEW]||vInicio;
   $('#view').innerHTML=V();
-  $('#ttl').innerHTML=VIEW==='inicio'?'Cuentas Claras <button onclick="go(\'ajustes\')" style="background:none;border:0;color:#fff;font-size:20px;cursor:pointer;vertical-align:middle" aria-label="Ajustes">⚙️</button>':{movs:'Movimientos',agenda:'Agenda',conc:'Conciliación',anal:'Análisis',ajustes:'Ajustes'}[VIEW];
+  $('#ttl').innerHTML=VIEW==='inicio'?'Cuentas Claras <button onclick="go(\'ajustes\')" style="background:none;border:0;color:#fff;font-size:20px;cursor:pointer;vertical-align:middle" aria-label="Ajustes">⚙️</button>':{movs:'Movimientos',agenda:'Agenda',flujo:'Cashflow proyectado',conc:'Conciliación',anal:'Análisis',ajustes:'Ajustes'}[VIEW];
   bindTips();
 }
 
@@ -379,6 +379,11 @@ function vInicio(){
    <div class="row" style="justify-content:space-between"><div><div class="small">Pendiente</div><b style="font-size:19px" class="${ag.pend>0?'neg':'pos'}">${fmt(ag.pend)}</b></div><div style="text-align:right"><div class="small">Comprometido</div><b>${fmt(ag.total)}</b></div></div>
    <div class="bar mt"><i style="width:${ag.total?Math.min(100,ag.pag/ag.total*100):0}%;background:var(--good)"></i></div>
    ${pend.length?`<div class="list mt">${pend.map(itemAgenda).join('')}</div>`:''}</div>`;
+  {const cf=cashflow(6);const mn=cf.reduce((a,r)=>r.fin<a.fin?r:a,cf[0]);
+   h+=`<div class="card" onclick="go('flujo')" style="cursor:pointer"><h2>💧 Cashflow proyectado<span class="sp"></span><span class="small">6 meses ›</span></h2>
+   <div class="row" style="justify-content:space-between;gap:8px"><div><div class="small">Liquidez hoy</div><b>${fmt(cf[0].ini)}</b></div><div style="text-align:center"><div class="small">Fin de ${MES[+cf[0].ym.slice(5)-1].toLowerCase()}</div><b class="${cf[0].fin<0?'neg':''}">${fmt(cf[0].fin)}</b></div><div style="text-align:right"><div class="small">Mínimo (${lblMes(mn.ym)})</div><b class="${mn.fin<0?'neg':'pos'}">${fmt(mn.fin)}</b></div></div>
+   ${lineChart(cf.map(r=>lblMes(r.ym)),cf.map(r=>r.fin),{h:120,label:'Saldo proyectado'})}
+   ${S.ingProy.length?'':'<div class="small">Cargá tus ingresos proyectados en Agenda para que el cashflow sea real.</div>'}</div>`}
   h+=`<div class="card"><h2>💳 Próximos vencimientos<span class="sp"></span><button class="btn sm ghost" onclick="go('ajustes')">Editar</button></h2>`;
   if(!tarjetas.length)h+=`<div class="empty">Agregá tus tarjetas en Ajustes.</div>`;
   tarjetas.forEach(m=>{const r=proximosResumenes(m,1)[0];const cur=ciclo(m,today(),0);const dias=r?dayDiff(r.venc,today()):null;
@@ -414,8 +419,10 @@ function itemMov(mv){
 }
 
 /* ============ Agenda: gastos fijos, débitos automáticos y préstamos ============ */
-const FREQ={1:'Mensual',2:'Bimestral',3:'Trimestral',6:'Semestral',12:'Anual'};
-function fijoVence(f,ym){if(f.activo===false||!f.desde)return null;const d=ymDiff(ym,f.desde);if(d<0||d%(+f.freq||1))return null;if(f.hasta&&ym>f.hasta)return null;const[y,m]=ym.split('-').map(Number);return ymd(mkDate(y,m-1,+f.dia||1))}
+const FREQ={1:'Mensual',2:'Bimestral',3:'Trimestral',6:'Semestral',12:'Anual',0:'Una sola vez'};
+const fq=f=>(f.freq===0||f.freq==='0')?0:(+f.freq||1);
+const fMens=f=>fq(f)?conv(+f.importe||0,f.moneda,'ARS')/fq(f):0;
+function fijoVence(f,ym){if(f.activo===false||!f.desde)return null;const d=ymDiff(ym,f.desde);const q=fq(f);if(d<0||(q===0?d!==0:d%q))return null;if(f.hasta&&ym>f.hasta)return null;const[y,m]=ym.split('-').map(Number);return ymd(mkDate(y,m-1,+f.dia||1))}
 const pagoFijo=(f,ym)=>S.movs.find(x=>x.fijo===f.id&&x.fijoMes===ym);
 function cuotaPrestamo(p,ym){if(!p.proxima)return null;const d=ymDiff(ym,p.proxima.slice(0,7));const k=(+p.pagadas||0)+1+d;if(d<0||k>+p.n)return null;const[y,m]=ym.split('-').map(Number);return{k,fecha:ymd(mkDate(y,m-1,+p.dia||+p.proxima.slice(8)))}}
 const pagoPrest=(p,k)=>S.movs.find(x=>x.prest===p.id&&x.prestCuota===k);
@@ -432,7 +439,95 @@ function generarAuto(){let n=0;const hoy=today(),ymH=hoy.slice(0,7);
   S.prestamos.forEach(p=>{if(!p.auto||!p.proxima)return;const c0=p.creadoF||hoy;let ym=p.proxima.slice(0,7);
     for(let g=0;ym<=ymH&&g<240;g++,ym=ymAdd(ym,1)){const c=cuotaPrestamo(p,ym);if(!c||c.fecha>hoy||c.fecha<c0||pagoPrest(p,c.k)||S.skip['p'+p.id+'|'+c.k])continue;
       S.movs.push({id:uid(),tipo:'gasto',fecha:c.fecha,hora:'',importe:+p.cuota,moneda:p.moneda||'ARS',cat:'prest',metodo:p.cuenta,desc:p.nombre+' cuota '+c.k+'/'+p.n,cuotas:1,quien:S.miembros[0],prest:p.id,prestCuota:c.k,auto:1});n++}});
+  S.ingProy.forEach(f=>{if(!f.auto||f.activo===false||!f.desde)return;const c0=f.creadoF||hoy;let ym=f.desde>c0.slice(0,7)?f.desde:c0.slice(0,7);
+    for(let g=0;ym<=ymH&&g<60;g++,ym=ymAdd(ym,1)){const d=fijoVence(f,ym);if(!d||d>hoy||d<c0||cobroIng(f,ym)||S.skip['i'+f.id+'|'+ym])continue;
+      const mv={id:uid(),tipo:'ingreso',fecha:d,hora:'',importe:+f.importe||0,moneda:f.moneda||'ARS',cat:f.cat||'oting',destino:f.destino,desc:f.nombre,quien:S.miembros[0],ingP:f.id,ingMes:ym,auto:1};if(f.variable)mv.est=true;S.movs.push(mv);n++}});
   if(n){save();setTimeout(()=>toast(`📌 ${n} débito${n>1?'s':''} automático${n>1?'s':''} registrado${n>1?'s':''}`),900)}return n}
+const cobroIng=(f,ym)=>S.movs.find(x=>x.ingP===f.id&&x.ingMes===ym);
+function cobrosMes(ym){const hoy=today();const it=[];
+  S.ingProy.forEach(f=>{const d=fijoVence(f,ym);if(!d)return;const mv=cobroIng(f,ym);const sk=S.skip['i'+f.id+'|'+ym];
+    it.push({f,ym,fecha:d,mov:mv,monto:mv?ars(mv):conv(+f.importe||0,f.moneda,'ARS'),estado:(mv||sk)?'cobrado':d<hoy?'atrasado':'pendiente'})});
+  return it.sort((a,b)=>a.fecha<b.fecha?-1:1)}
+function actCobro(c){const f=c.f;const fe=c.fecha<=today()?c.fecha:today();
+  return `openMov(null,{tipo:'ingreso',cat:'${f.cat||'oting'}',destino:'${f.destino||''}',importe:${f.variable?"''":(+f.importe||"''")},moneda:'${f.moneda||'ARS'}',desc:'${esc(f.nombre)}',fecha:'${fe}',ingP:'${f.id}',ingMes:'${c.ym}'})`}
+function itemCobro(c){const f=c.f;const chip={cobrado:'<span class="chip g">✔ cobrado</span>',pendiente:'<span class="chip">pendiente</span>',atrasado:'<span class="chip w">atrasado</span>'}[c.estado];
+  return`<div class="it" onclick="event.stopPropagation();${c.mov?`openMov('${c.mov.id}')`:actCobro(c)}"><div class="ico" style="background:var(--goodSoft)">${cat(f.cat).e}</div><div class="tx"><div class="t1">${esc(f.nombre)}</div><div class="t2">${fdia(c.fecha)} · → ${esc(met(f.destino)?.nombre||'?')}${f.auto?' · automático':''}</div></div><div class="am pos">${c.mov?'':(f.variable?'~':'')}${fmt(c.mov?c.mov.importe:f.importe,f.moneda)}<div style="margin-top:3px">${c.estado==='cobrado'?chip:`<button class="btn sm sec" onclick="event.stopPropagation();${actCobro(c)}">Registrar cobro</button>`}</div></div></div>`}
+let IF=null;
+function openIng(id){const f=id?S.ingProy.find(x=>x.id===id):null;
+  IF=f?JSON.parse(JSON.stringify(f)):{id:null,nombre:'',cat:'sueldo',destino:S.metodos.find(m=>m.tipo==='cuenta')?.id||S.metodos[0].id,moneda:'ARS',importe:'',variable:false,dia:1,freq:1,desde:today().slice(0,7),hasta:'',auto:false,activo:true};
+  drawIng();openSheet()}
+function drawIng(){const f=IF;
+  let h=`<div class="grab"></div><h3>${f.id?'Editar':'Nuevo'} ingreso proyectado<button class="x" onclick="closeSheet()">✕</button></h3>
+  <label class="f"><span>Nombre</span><input class="in" value="${esc(f.nombre)}" placeholder="Ej: Sueldo LIEX, Aguinaldo, Alquiler depto, Bono anual" oninput="IF.nombre=this.value"></label>
+  <label class="f"><span>Concepto</span><div class="grid-chips">${S.cats.filter(c=>c.tipo==='ingreso').map(c=>`<div class="gc ${f.cat===c.id?'on':''}" onclick="IF.cat='${c.id}';drawIng()"><span class="e">${c.e}</span>${esc(c.nombre)}</div>`).join('')}</div></label>
+  <label class="f"><span>¿Dónde se deposita?</span><select class="in" onchange="IF.destino=this.value">${S.metodos.filter(x=>x.tipo==='cuenta'||x.tipo==='billetera'||x.tipo==='efectivo').map(x=>`<option value="${x.id}" ${f.destino===x.id?'selected':''}>${icoMet(x)} ${esc(x.nombre)}</option>`).join('')}</select></label>
+  <div class="two"><label class="f"><span>Importe ${f.variable?'estimado':''}</span><input class="in" inputmode="decimal" value="${f.importe===''?'':String(f.importe).replace('.',',')}" oninput="IF.importe=numIn(this.value)"></label><label class="f"><span>Moneda</span><select class="in" onchange="IF.moneda=this.value">${['ARS','USD'].map(c=>`<option ${f.moneda===c?'selected':''}>${c}</option>`).join('')}</select></label></div>
+  <label class="f"><span>Tipo de importe</span><div class="seg"><button class="${!f.variable?'on':''}" onclick="IF.variable=false;drawIng()">Fijo</button><button class="${f.variable?'on':''}" onclick="IF.variable=true;drawIng()">Variable / estimado</button></div></label>
+  <div class="two"><label class="f"><span>Día de cobro</span><input class="in" type="number" min="1" max="31" value="${f.dia}" onchange="IF.dia=+this.value"></label><label class="f"><span>Frecuencia</span><select class="in" onchange="IF.freq=+this.value">${[1,2,3,6,12,0].map(k=>`<option value="${k}" ${fq(f)===k?'selected':''}>${FREQ[k]}</option>`).join('')}</select></label></div>
+  <div class="two"><label class="f"><span>${fq(f)===0?'Mes de cobro':'Primer cobro (mes)'}</span><input class="in" type="month" value="${f.desde}" onchange="IF.desde=this.value"></label>${fq(f)===0?'<div></div>':`<label class="f"><span>Hasta (opcional)</span><input class="in" type="month" value="${f.hasta||''}" onchange="IF.hasta=this.value"></label>`}</div>
+  <div class="small mt">Aguinaldo: frecuencia <b>Semestral</b>, primer cobro <b>junio</b>, día 30 (cobra junio y diciembre). Bono o venta puntual: <b>Una sola vez</b>.</div>
+  <label class="f"><span>Registro</span><div class="seg"><button class="${f.auto?'on':''}" onclick="IF.auto=true;drawIng()">Automático</button><button class="${!f.auto?'on':''}" onclick="IF.auto=false;drawIng()">Lo confirmo yo</button></div></label>
+  <div class="small mt">${f.auto?'Se registra solo en la fecha (útil para acreditaciones seguras). Si cambia el importe, editás el movimiento.':'Aparece en la Agenda como cobro pendiente y lo confirmás con el importe real.'}</div>
+  ${f.id?`<label class="f"><span>Estado</span><div class="seg"><button class="${f.activo!==false?'on':''}" onclick="IF.activo=true;drawIng()">Activo</button><button class="${f.activo===false?'on':''}" onclick="IF.activo=false;drawIng()">Pausado / baja</button></div></label>`:''}
+  <div class="actions">${f.id?`<button class="btn danger" style="flex:0 0 auto" onclick="delIng()">🗑</button>`:''}<button class="btn" onclick="saveIng()">Guardar</button></div>`;
+  $('#sheet').innerHTML=h}
+function saveIng(){const f=IF;if(!f.nombre.trim())return toast('Poné un nombre');if(!(+f.importe>0))return toast('Ingresá el importe');if(!f.desde)return toast('Indicá el mes');
+  f.nombre=f.nombre.trim();f.freq=fq(f);if(f.freq===0)f.hasta='';if(!f.id){f.id=uid();f.creadoF=today();S.ingProy.push(f)}else S.ingProy[S.ingProy.findIndex(x=>x.id===f.id)]=f;generarAuto();save();closeSheet();render();toast('Guardado ✔')}
+async function delIng(){if(!await ask('¿Eliminar este ingreso proyectado? Los cobros registrados se conservan.','Eliminar',1))return;S.ingProy=S.ingProy.filter(x=>x.id!==IF.id);save();closeSheet();render()}
+
+/* ============ Cashflow proyectado ============ */
+const LIQ=m=>m.tipo==='cuenta'||m.tipo==='billetera'||m.tipo==='efectivo';
+function liquidezHoy(){const s=saldos();return S.metodos.filter(LIQ).reduce((a,m)=>a+conv(s[m.id]||0,m.moneda||'ARS','ARS'),0)}
+const esCorriente=x=>x.tipo==='gasto'&&!x.ancla&&!x.fijo&&!x.prest&&x.cat!=='prest'&&!((+x.cuotas||1)>1);
+function corrienteAuto(){const ym0=today().slice(0,7);let t=0,k=0;for(let i=1;i<=3;i++){const ym=ymAdd(ym0,-i);const g=S.movs.filter(x=>esCorriente(x)&&x.fecha.slice(0,7)===ym).reduce((a,x)=>a+ars(x),0);if(g>0){t+=g;k++}}return k?t/k:0}
+function corrienteMes(){return S.cfg.corriente!==undefined&&S.cfg.corriente!==null&&S.cfg.corriente!==''?+S.cfg.corriente:corrienteAuto()}
+function cashflow(n){const hoy=today(),ym0=hoy.slice(0,7);const C=corrienteMes();const inf=(+S.cfg.infl||0)/100;const out=[];let saldo=liquidezHoy();
+  for(let k=0;k<n;k++){const ym=ymAdd(ym0,k);const fx=Math.pow(1+inf,k);const r={ym,ing:0,tarj:0,prest:0,fijos:0,corr:0,det:{ing:[],tarj:[],prest:[],fijos:[]}};
+    cobrosMes(ym).forEach(c=>{if(c.estado==='cobrado')return;r.ing+=c.monto;r.det.ing.push([c.f.nombre,c.monto,c.fecha])});
+    S.metodos.filter(m=>m.tipo==='credito').forEach(m=>{resumenesTarjeta(m,ym+'-01',40).filter(x=>x.venc.slice(0,7)===ym).forEach(x=>{let v=x.total;
+      if(k===0){const lim=ymd(new Date(parseYmd(x.venc).getTime()+12*864e5));v=Math.max(0,v-S.movs.filter(t=>t.tipo==='transf'&&t.destino===m.id&&t.fecha>x.cierre&&t.fecha<=lim).reduce((a,t)=>a+ars(t),0))}
+      if(v>0){r.tarj+=v;r.det.tarj.push([m.nombre,v,x.venc])}})});
+    S.prestamos.forEach(p=>{const c=cuotaPrestamo(p,ym);if(!c||pagoPrest(p,c.k))return;const v=conv(+p.cuota,p.moneda,'ARS');r.prest+=v;r.det.prest.push([p.nombre+' '+c.k+'/'+p.n,v,c.fecha])});
+    S.fijos.forEach(f=>{const m=met(f.metodo);if(m&&m.tipo==='credito')return;const d=fijoVence(f,ym);if(!d||pagoFijo(f,ym)||S.skip[f.id+'|'+ym])return;const v=conv(+f.importe||0,f.moneda,'ARS')*fx;r.fijos+=v;r.det.fijos.push([f.nombre,v,d])});
+    if(k===0){const g=S.movs.filter(x=>esCorriente(x)&&x.fecha.slice(0,7)===ym).reduce((a,x)=>a+ars(x),0);r.corr=Math.max(0,C-g);r.gastado=g}else r.corr=C*fx;
+    r.egr=r.tarj+r.prest+r.fijos+r.corr;r.neto=r.ing-r.egr;r.ini=saldo;saldo+=r.neto;r.fin=saldo;out.push(r)}
+  return out}
+function lineChart(labels,vals,opt){opt=opt||{};const W=340,H=opt.h||170,pl=42,pb=22,pt=14;const mn=Math.min(0,...vals),mx=Math.max(0,...vals);
+  const top=mx>0?niceMax(mx):0,bot=mn<0?-niceMax(-mn):0;const rng=(top-bot)||1;const Y=v=>pt+(H-pb-pt)*(top-v)/rng;const n=labels.length;const X=i=>pl+10+(W-pl-20)*(n===1?0.5:i/(n-1));
+  let g='';for(let k=0;k<=4;k++){const v=bot+rng*k/4;g+=`<line x1="${pl}" x2="${W}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${pl-5}" y="${Y(v)+4}" text-anchor="end" font-size="10" fill="var(--muted)">${fmtK(v)}</text>`}
+  if(bot<0)g+=`<line x1="${pl}" x2="${W}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--ink2)" stroke-width="1"/>`;
+  g+=`<polyline fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round" points="${vals.map((v,i)=>X(i).toFixed(1)+','+Y(v).toFixed(1)).join(' ')}"/>`;
+  vals.forEach((v,i)=>{g+=`<circle cx="${X(i)}" cy="${Y(v)}" r="4.5" fill="${v<0?'var(--bad)':'var(--s1)'}" stroke="var(--card)" stroke-width="2"/><circle cx="${X(i)}" cy="${Y(v)}" r="13" fill="transparent" data-tip="${esc(labels[i])}: ${fmt(v)}"/><text x="${X(i)}" y="${H-6}" text-anchor="middle" font-size="10.5" fill="var(--ink2)">${esc(labels[i])}</text>`});
+  return`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(opt.label||'Evolución')}">${g}</svg>`}
+let FLH=6;
+function vFlujo(){const cf=cashflow(FLH);const liq=liquidezHoy();const C=corrienteMes(),Ca=corrienteAuto();
+  const min=cf.reduce((a,r)=>r.fin<a.fin?r:a,cf[0]);const neg=cf.find(r=>r.fin<0);
+  let h=`<div class="seg mb">${[6,12].map(n=>`<button class="${FLH===n?'on':''}" onclick="FLH=${n};render()">${n} meses</button>`).join('')}</div>
+  <div class="kpis"><div class="kpi"><div class="l">💧 Liquidez hoy</div><div class="v ${liq<0?'neg':''}">${fmt(liq)}</div><div class="s">cuentas + billeteras + efectivo</div></div>
+   <div class="kpi"><div class="l">🏁 Saldo a ${lblMes(cf[cf.length-1].ym)}</div><div class="v ${cf[cf.length-1].fin<0?'neg':'pos'}">${fmt(cf[cf.length-1].fin)}</div><div class="s">Mínimo ${fmt(min.fin)} en ${lblMes(min.ym)}</div></div></div>`;
+  if(neg)h+=`<div class="sug b"><span class="e">🚨</span><div><b>Saldo negativo en ${MESL[+neg.ym.slice(5)-1]} ${neg.ym.slice(0,4)}</b><p>Faltarían ${fmt(-neg.fin)}. Opciones: adelantar cobros, mover gastos no esenciales, refinanciar el resumen más pesado o rescatar inversiones antes de esa fecha.</p></div></div>`;
+  else h+=`<div class="sug g"><span class="e">✅</span><div><b>Sin faltantes en el horizonte</b><p>El saldo mínimo proyectado es ${fmt(min.fin)} (${lblMes(min.ym)}). ${min.fin>C*2?'Hay excedente para invertir sin comprometer pagos.':'Margen ajustado: menos de dos meses de gasto corriente.'}</p></div></div>`;
+  h+=`<div class="card"><h2>📊 Ingresos vs egresos proyectados</h2>${bars(cf.map(r=>lblMes(r.ym)),[{n:'Ingresos',vals:cf.map(r=>r.ing),c:'var(--s3)'},{n:'Egresos',vals:cf.map(r=>r.egr),c:'var(--s2)'}],{label:'Ingresos y egresos proyectados'})}<div class="small">${lblMes(cf[0].ym)}: solo lo que falta cobrar y pagar en el mes.</div></div>
+  <div class="card"><h2>📈 Saldo proyectado a fin de mes</h2>${lineChart(cf.map(r=>lblMes(r.ym)),cf.map(r=>r.fin),{label:'Saldo proyectado'})}</div>
+  <div class="card"><h2>🧾 Detalle mensual</h2><div style="overflow-x:auto"><table class="t"><tr><th>Mes</th><th style="text-align:right">Ingresos</th><th style="text-align:right">Egresos</th><th style="text-align:right">Neto</th><th style="text-align:right">Saldo</th></tr>
+   ${cf.map((r,i)=>`<tr onclick="detFlujo(${i})" style="cursor:pointer"><td><b>${lblMes(r.ym)}</b></td><td class="n pos">${fmtK(r.ing)}</td><td class="n neg">${fmtK(r.egr)}</td><td class="n ${r.neto<0?'neg':''}">${fmtK(r.neto)}</td><td class="n ${r.fin<0?'neg':''}"><b>${fmtK(r.fin)}</b></td></tr>`).join('')}</table></div><div class="small mt">Tocá un mes para ver el detalle.</div></div>
+  <div class="card"><h2>⚙️ Supuestos</h2>
+   <table class="t"><tr><td>Ingresos proyectados</td><td class="n">${S.ingProy.filter(f=>f.activo!==false).length} cargados</td></tr><tr><td>Tarjetas</td><td class="n">resúmenes + cuotas + débitos</td></tr><tr><td>Préstamos y gastos fijos</td><td class="n">${S.prestamos.length} / ${S.fijos.filter(f=>f.activo!==false).length}</td></tr></table>
+   <label class="f"><span>Gasto corriente mensual (súper, comida, combustible, varios)</span><input class="in" inputmode="decimal" placeholder="Automático: ${fmt(Ca)}" value="${S.cfg.corriente!==undefined&&S.cfg.corriente!==''&&S.cfg.corriente!==null?String(S.cfg.corriente).replace('.',','):''}" onchange="const v=numIn(this.value);S.cfg.corriente=v===''?'':v;save();render()"></label>
+   <div class="small mt">Vacío = promedio de los últimos 3 meses (${fmt(Ca)}), sin fijos, préstamos ni compras en cuotas. Usado: <b>${fmt(C)}</b>.</div>
+   <label class="f"><span>Inflación mensual estimada para gasto corriente y fijos (%)</span><input class="in" inputmode="decimal" placeholder="0" value="${S.cfg.infl?String(S.cfg.infl).replace('.',','):''}" onchange="S.cfg.infl=numIn(this.value)||0;save();render()"></label>
+   <div class="small mt">Cuotas y préstamos no se ajustan (son nominales). Los ingresos se proyectan como los cargaste: actualizalos cuando cambien.</div>
+   <div class="two mt"><button class="btn sec" onclick="openIng()">+ Ingreso</button><button class="btn sec" onclick="go('agenda')">Ver Agenda</button></div></div>`;
+  return h}
+function detFlujo(i){const r=cashflow(FLH)[i];const sec=(t,e,arr,tot,cls)=>`<tr><td colspan="2" style="padding-top:12px"><b>${e} ${t}</b></td><td class="n ${cls}"><b>${fmt(tot)}</b></td></tr>${arr.map(([n,v,f])=>`<tr><td class="small">${fdia(f)}</td><td>${esc(n)}</td><td class="n">${fmt(v)}</td></tr>`).join('')}`;
+  let h=`<div class="grab"></div><h3>Cashflow ${MESL[+r.ym.slice(5)-1]} ${r.ym.slice(0,4)}<button class="x" onclick="closeSheet()">✕</button></h3>
+  <table class="t"><tr><td colspan="2">Saldo inicial${i===0?' (liquidez hoy)':''}</td><td class="n"><b>${fmt(r.ini)}</b></td></tr>
+  ${sec('Ingresos'+(i===0?' pendientes':''),'⬆️',r.det.ing,r.ing,'pos')}${sec('Tarjetas','💳',r.det.tarj,r.tarj,'neg')}${sec('Préstamos','🏛️',r.det.prest,r.prest,'neg')}${sec('Gastos fijos','📌',r.det.fijos,r.fijos,'neg')}
+  <tr><td colspan="2" style="padding-top:12px"><b>🛒 Gasto corriente</b>${i===0?`<div class="small">Estimado ${fmt(corrienteMes())} − ya gastado ${fmt(r.gastado)}</div>`:''}</td><td class="n neg"><b>${fmt(r.corr)}</b></td></tr>
+  <tr><td colspan="2" style="padding-top:12px"><b>Neto del mes</b></td><td class="n ${r.neto<0?'neg':'pos'}"><b>${fmt(r.neto)}</b></td></tr><tr><td colspan="2"><b>Saldo final</b></td><td class="n ${r.fin<0?'neg':''}"><b>${fmt(r.fin)}</b></td></tr></table>
+  <div class="actions"><button class="btn" onclick="closeSheet()">Listo</button></div>`;
+  $('#sheet').innerHTML=h;openSheet()}
+
 function agendaMes(ym){const hoy=today();const items=[];const est=(pagado,fecha)=>pagado?'pagado':fecha<hoy?'vencido':'pendiente';
   S.metodos.filter(m=>m.tipo==='credito').forEach(m=>{resumenesTarjeta(m,ym+'-01',8).filter(r=>r.venc.slice(0,7)===ym).forEach(r=>{
     const lim=ymd(new Date(parseYmd(r.venc).getTime()+12*864e5));const pg=S.movs.filter(x=>x.tipo==='transf'&&x.destino===m.id&&x.fecha>r.cierre&&x.fecha<=lim);
@@ -456,16 +551,21 @@ function agendaMes(ym){const hoy=today();const items=[];const est=(pagado,fecha)
 function itemAgenda(i){const chip={pagado:'<span class="chip g">✔ pagado</span>',pendiente:'<span class="chip">pendiente</span>',vencido:'<span class="chip b">vencido</span>'}[i.estado];
   return`<div class="it" onclick="event.stopPropagation();${i.mov?`openMov('${i.mov}')`:i.act}"><div class="ico">${i.e}</div><div class="tx"><div class="t1">${esc(i.nombre)}</div><div class="t2">${fdia(i.fecha)} · ${esc(i.sub||'')}</div></div><div class="am">${i.txt}<div style="margin-top:3px">${i.estado==='pagado'?chip:`<button class="btn sm ${i.estado==='vencido'?'danger':'sec'}" onclick="event.stopPropagation();${i.act}">${i.k==='tarjeta'?'Pagar':'Registrar'}</button>`}</div></div></div>`}
 function vAgenda(){const ag=agendaMes(MES_ACT);const mesN=MESL[+MES_ACT.slice(5)-1];
-  const mens=S.fijos.filter(f=>f.activo!==false).reduce((a,f)=>a+conv(+f.importe||0,f.moneda,'ARS')/(+f.freq||1),0);
+  const mens=S.fijos.filter(f=>f.activo!==false).reduce((a,f)=>a+fMens(f),0);
   let h=`<div class="kpis"><div class="kpi"><div class="l">📌 Comprometido</div><div class="v">${fmt(ag.total)}</div><div class="s">${mesN}</div></div><div class="kpi"><div class="l">⏳ Pendiente</div><div class="v ${ag.pend>0?'neg':'pos'}">${fmt(ag.pend)}</div><div class="s">${ag.pagados}/${ag.items.length} pagados</div></div></div>
   <div class="card"><h2>🗓️ Vencimientos de ${mesN}</h2>${ag.items.length?`<div class="list">${ag.items.map(itemAgenda).join('')}</div>`:'<div class="empty">Sin vencimientos este mes. Cargá tus gastos fijos y préstamos abajo.</div>'}
    <div class="small mt">Los resúmenes de tarjeta ya incluyen las cuotas y los débitos automáticos de esa tarjeta.</div></div>`;
+  {const cb=cobrosMes(MES_ACT);const pc=cb.filter(c=>c.estado!=='cobrado').reduce((a,c)=>a+c.monto,0);
+   h+=`<div class="card"><h2>💰 Cobros esperados de ${mesN}<span class="sp"></span>${cb.length?`<span class="small">a cobrar ${fmt(pc)}</span>`:''}</h2>${cb.length?`<div class="list">${cb.map(itemCobro).join('')}</div>`:'<div class="empty">Cargá tus ingresos proyectados (sueldo, aguinaldo, alquileres…) para ver el cashflow.</div>'}</div>`}
   if(ag.enTarjeta.length)h+=`<div class="card"><h2>🔁 Débitos automáticos en tarjetas</h2><div class="list">${ag.enTarjeta.map(({f,d,pg})=>`<div class="it" onclick="${pg?`openMov('${pg.id}')`:`openFijo('${f.id}')`}"><div class="ico">${cat(f.cat).e}</div><div class="tx"><div class="t1">${esc(f.nombre)}</div><div class="t2">${fdia(d)} · ${esc(met(f.metodo)?.nombre||'')}${f.plastico?' ('+esc(f.plastico)+')':''}</div></div><div class="am">${fmt(pg?pg.importe:f.importe,f.moneda)}<div>${pg?(pg.est?'<span class="chip w">estimado</span>':'<span class="chip g">✔ registrado</span>'):'<span class="chip">proyectado</span>'}</div></div></div>`).join('')}</div></div>`;
+  h+=`<div class="card"><h2>💰 Ingresos proyectados<span class="sp"></span><button class="btn sm" onclick="openIng()">+ Nuevo</button></h2>
+   ${S.ingProy.length?`<div class="small mb">Equivalente mensual: <b>${fmt(S.ingProy.filter(f=>f.activo!==false).reduce((a,f)=>a+fMens(f),0))}</b> (sin cobros únicos)</div><div class="list">${[...S.ingProy].sort((a,b)=>(+a.dia||0)-(+b.dia||0)).map(f=>`<div class="it" onclick="openIng('${f.id}')" style="${f.activo===false?'opacity:.45':''}"><div class="ico" style="background:var(--goodSoft)">${cat(f.cat).e}</div><div class="tx"><div class="t1">${esc(f.nombre)}</div><div class="t2">${fq(f)===0?lblMes(f.desde):'Día '+f.dia+' · '+FREQ[fq(f)]} · → ${esc(met(f.destino)?.nombre||'?')}${f.auto?' · automático':''}</div></div><div class="am pos">${f.variable?'~':''}${fmt(f.importe,f.moneda)}</div></div>`).join('')}</div>`:'<div class="empty">Sueldo, aguinaldo, honorarios, alquileres, rentas…</div>'}
+   <button class="btn ghost full mt" onclick="go('flujo')">💧 Ver cashflow proyectado</button></div>`;
   h+=`<div class="card"><h2>📌 Gastos fijos<span class="sp"></span><button class="btn sm" onclick="openFijo()">+ Nuevo</button></h2>
-   ${S.fijos.length?`<div class="small mb">Equivalente mensual: <b>${fmt(mens)}</b></div><div class="list">${[...S.fijos].sort((a,b)=>(+a.dia||0)-(+b.dia||0)).map(f=>`<div class="it" onclick="openFijo('${f.id}')" style="${f.activo===false?'opacity:.45':''}"><div class="ico">${cat(f.cat).e}</div><div class="tx"><div class="t1">${esc(f.nombre)}</div><div class="t2">Día ${f.dia} · ${FREQ[f.freq||1]} · ${esc(met(f.metodo)?.nombre||'?')}${f.auto?' · automático':''}</div></div><div class="am">${f.variable?'~':''}${fmt(f.importe,f.moneda)}</div></div>`).join('')}</div>`:'<div class="empty">Colegio, inglés, mensualidades, luz, gas, agua, internet, tasas, inmobiliario, patente, seguros, suscripciones…<br>Cargalos una vez y la app te avisa cada vencimiento.</div>'}</div>`;
+   ${S.fijos.length?`<div class="small mb">Equivalente mensual: <b>${fmt(mens)}</b></div><div class="list">${[...S.fijos].sort((a,b)=>(+a.dia||0)-(+b.dia||0)).map(f=>`<div class="it" onclick="openFijo('${f.id}')" style="${f.activo===false?'opacity:.45':''}"><div class="ico">${cat(f.cat).e}</div><div class="tx"><div class="t1">${esc(f.nombre)}</div><div class="t2">Día ${f.dia} · ${FREQ[fq(f)]} · ${esc(met(f.metodo)?.nombre||'?')}${f.auto?' · automático':''}</div></div><div class="am">${f.variable?'~':''}${fmt(f.importe,f.moneda)}</div></div>`).join('')}</div>`:'<div class="empty">Colegio, inglés, mensualidades, luz, gas, agua, internet, tasas, inmobiliario, patente, seguros, suscripciones…<br>Cargalos una vez y la app te avisa cada vencimiento.</div>'}</div>`;
   h+=`<div class="card"><h2>🏛️ Préstamos<span class="sp"></span><button class="btn sm" onclick="openPrest()">+ Nuevo</button></h2>
    ${S.prestamos.length?`<div class="list">${S.prestamos.map(p=>{const e=estadoPrestamo(p);return`<div class="it" onclick="openPrest('${p.id}')"><div class="ico">🏛️</div><div class="tx"><div class="t1">${esc(p.nombre)}</div><div class="t2">${esc(p.entidad||'')} · ${e.pag}/${p.n} pagadas · cuota ${fmt(p.cuota,p.moneda)}</div><div class="bar" style="margin-top:5px"><i style="width:${p.n?e.pag/p.n*100:0}%;background:var(--s3)"></i></div></div><div class="am">${fmt(e.cap!==null?e.cap:e.nominal,p.moneda)}<small>${e.cap!==null?'capital pendiente':'resta pagar'}</small></div></div>`}).join('')}</div>`:'<div class="empty">Sin préstamos. Por ahora: cuota fija.</div>'}</div>`;
-  h+=`<div class="card"><h2>📥 Importar desde planilla</h2><p class="small" style="margin-top:0">Cuotas pendientes de tarjetas, gastos fijos/débitos automáticos y préstamos, desde un Excel (.xlsx) con el formato de la plantilla.</p>
+  h+=`<div class="card"><h2>📥 Importar desde planilla</h2><p class="small" style="margin-top:0">Cuotas pendientes de tarjetas, gastos fijos/débitos automáticos, préstamos e ingresos proyectados, desde un Excel (.xlsx) con el formato de la plantilla.</p>
    <div class="two"><a class="btn sec" style="text-align:center;text-decoration:none" href="plantilla-importacion.xlsx" download>⬇️ Plantilla</a><label class="btn" style="text-align:center">⬆️ Importar<input type="file" accept=".xlsx" hidden onchange="importarPlanilla(this.files[0]);this.value=''"></label></div></div>`;
   return h;
 }
@@ -481,7 +581,7 @@ function drawFijo(){const f=FF;const m=met(f.metodo);
   if(m&&m.tipo==='credito'&&(m.adicionales||[]).length)h+=`<label class="f"><span>Plástico</span><div class="hscroll">${['',...m.adicionales].map(a=>`<button class="pill ${(f.plastico||'')===a?'on':''}" onclick="FF.plastico='${esc(a)}';drawFijo()">${esc(a||'Titular')}</button>`).join('')}</div></label>`;
   h+=`<div class="two"><label class="f"><span>Importe ${f.variable?'estimado':''}</span><input class="in" inputmode="decimal" value="${f.importe===''?'':String(f.importe).replace('.',',')}" oninput="FF.importe=numIn(this.value)"></label><label class="f"><span>Moneda</span><select class="in" onchange="FF.moneda=this.value">${['ARS','USD'].map(c=>`<option ${f.moneda===c?'selected':''}>${c}</option>`).join('')}</select></label></div>
   <label class="f"><span>Tipo de importe</span><div class="seg"><button class="${!f.variable?'on':''}" onclick="FF.variable=false;drawFijo()">Fijo</button><button class="${f.variable?'on':''}" onclick="FF.variable=true;drawFijo()">Variable (luz, gas…)</button></div></label>
-  <div class="two"><label class="f"><span>Día de vencimiento</span><input class="in" type="number" min="1" max="31" value="${f.dia}" onchange="FF.dia=+this.value"></label><label class="f"><span>Frecuencia</span><select class="in" onchange="FF.freq=+this.value">${Object.entries(FREQ).map(([k,l])=>`<option value="${k}" ${+f.freq===+k?'selected':''}>${l}</option>`).join('')}</select></label></div>
+  <div class="two"><label class="f"><span>Día de vencimiento</span><input class="in" type="number" min="1" max="31" value="${f.dia}" onchange="FF.dia=+this.value"></label><label class="f"><span>Frecuencia</span><select class="in" onchange="FF.freq=+this.value">${[1,2,3,6,12,0].map(k=>`<option value="${k}" ${fq(f)===k?'selected':''}>${FREQ[k]}</option>`).join('')}</select></label></div>
   <div class="two"><label class="f"><span>Primer vencimiento (mes)</span><input class="in" type="month" value="${f.desde}" onchange="FF.desde=this.value"></label><label class="f"><span>Hasta (opcional)</span><input class="in" type="month" value="${f.hasta||''}" onchange="FF.hasta=this.value"></label></div>
   <label class="f"><span>Registro</span><div class="seg"><button class="${f.auto?'on':''}" onclick="FF.auto=true;drawFijo()">Automático (débito)</button><button class="${!f.auto?'on':''}" onclick="FF.auto=false;drawFijo()">Lo confirmo yo</button></div></label>
   <div class="small mt">${f.auto?'Se registra solo el día del vencimiento'+(f.variable?' con el importe estimado; lo corregís al llegar la factura o el resumen (la conciliación te lo propone).':'.'):'Aparece en la Agenda como pendiente y lo registrás con un toque al pagarlo.'}</div>
@@ -489,7 +589,7 @@ function drawFijo(){const f=FF;const m=met(f.metodo);
   <div class="actions">${f.id?`<button class="btn danger" style="flex:0 0 auto" onclick="delFijo()">🗑</button>`:''}<button class="btn" onclick="saveFijo()">Guardar</button></div>`;
   $('#sheet').innerHTML=h}
 function saveFijo(){const f=FF;if(!f.nombre.trim())return toast('Poné un nombre');if(!(+f.importe>0))return toast('Ingresá el importe'+(f.variable?' estimado':''));if(!f.desde)return toast('Indicá el mes del primer vencimiento');
-  f.nombre=f.nombre.trim();f.freq=+f.freq||1;if(met(f.metodo)?.tipo!=='credito')delete f.plastico;
+  f.nombre=f.nombre.trim();f.freq=fq(f);if(met(f.metodo)?.tipo!=='credito')delete f.plastico;
   if(!f.id){f.id=uid();f.creadoF=today();S.fijos.push(f)}else S.fijos[S.fijos.findIndex(x=>x.id===f.id)]=f;generarAuto();save();closeSheet();render();toast('Guardado ✔')}
 async function delFijo(){if(!await ask('¿Eliminar este gasto fijo? Los pagos ya registrados se conservan.','Eliminar',1))return;S.fijos=S.fijos.filter(x=>x.id!==FF.id);save();closeSheet();render()}
 let PF=null;
@@ -575,7 +675,7 @@ function saveMov(){
   if(F.tipo!=='transf'&&!F.cat)return toast('Elegí un concepto');
   if(F.tipo==='transf'&&F.origen===F.destino)return toast('Origen y destino iguales');
   const o={id:F.id||uid(),tipo:F.tipo,fecha:F.fecha,hora:F.hora,importe:imp,moneda:F.moneda,desc:(F.desc||'').trim(),quien:F.quien};
-  ['fijo','fijoMes','prest','prestCuota','importKey','auto'].forEach(k=>{if(F[k]!==undefined&&F[k]!==null&&F[k]!=='')o[k]=F[k]});
+  ['fijo','fijoMes','prest','prestCuota','importKey','auto','ingP','ingMes'].forEach(k=>{if(F[k]!==undefined&&F[k]!==null&&F[k]!=='')o[k]=F[k]});
   if(F.tipo==='gasto'){o.cat=F.cat;o.metodo=F.metodo;const cr=met(F.metodo)?.tipo==='credito';o.cuotas=cr?Math.max(1,F.cuotas):1;S.cfg.ultMet=F.metodo;
     if(cr&&F.plastico&&(met(F.metodo).adicionales||[]).includes(F.plastico))o.plastico=F.plastico;
     if(cr&&F.ancla){o.ancla=F.ancla;o.pend=Math.min(o.cuotas,F.pend||o.cuotas);if(F.impCuota)o.impCuota=F.impCuota}}
@@ -586,7 +686,7 @@ function saveMov(){
   save();closeSheet();toast(F.id?'Actualizado ✔':'Guardado ✔');
   if(F._after)F._after();render();
 }
-async function delMov(){if(!await ask('¿Eliminar este movimiento?','Eliminar',1))return;const mv=S.movs.find(m=>m.id===F.id);if(mv&&mv.fijo&&mv.fijoMes)S.skip[mv.fijo+'|'+mv.fijoMes]=1;S.movs=S.movs.filter(m=>m.id!==F.id);save();closeSheet();render();toast('Eliminado')}
+async function delMov(){if(!await ask('¿Eliminar este movimiento?','Eliminar',1))return;const mv=S.movs.find(m=>m.id===F.id);if(mv&&mv.fijo&&mv.fijoMes)S.skip[mv.fijo+'|'+mv.fijoMes]=1;if(mv&&mv.ingP&&mv.ingMes)S.skip['i'+mv.ingP+'|'+mv.ingMes]=1;S.movs=S.movs.filter(m=>m.id!==F.id);save();closeSheet();render();toast('Eliminado')}
 function openSheet(){$('#sheetBg').classList.add('on');document.body.style.overflow='hidden'}
 function closeSheet(){$('#sheetBg').classList.remove('on');document.body.style.overflow=''}
 
@@ -605,7 +705,7 @@ function openTarjeta(id,pl){TJPL=pl===undefined?null:pl;const m=met(id);const ad
   const imp=S.movs.filter(x=>x.ancla&&x.metodo===id&&(TJPL===null||(x.plastico||'')===TJPL));
   if(imp.length)h+=`<details class="mt"><summary>📥 Cuotas importadas (${imp.length})</summary><div class="list">${imp.map(x=>`<div class="it" onclick="openMov('${x.id}')"><div class="ico">${cat(x.cat).e}</div><div class="tx"><div class="t1">${esc(x.desc)}</div><div class="t2">${fdia(x.fecha)} · quedan ${x.pend}/${x.cuotas}${x.plastico?' · '+esc(x.plastico):''}</div></div><div class="am">${fmt2(x.impCuota||x.importe/x.cuotas,x.moneda)}</div></div>`).join('')}</div></details>`;
   const fj=S.fijos.filter(f=>f.metodo===id);
-  if(fj.length)h+=`<details class="mt"><summary>🔁 Débitos automáticos (${fj.length})</summary><div class="list">${fj.map(f=>`<div class="it" onclick="openFijo('${f.id}')"><div class="ico">${cat(f.cat).e}</div><div class="tx"><div class="t1">${esc(f.nombre)}</div><div class="t2">Día ${f.dia} · ${FREQ[f.freq||1]}${f.plastico?' · '+esc(f.plastico):''}</div></div><div class="am">${f.variable?'~':''}${fmt(f.importe,f.moneda)}</div></div>`).join('')}</div></details>`;
+  if(fj.length)h+=`<details class="mt"><summary>🔁 Débitos automáticos (${fj.length})</summary><div class="list">${fj.map(f=>`<div class="it" onclick="openFijo('${f.id}')"><div class="ico">${cat(f.cat).e}</div><div class="tx"><div class="t1">${esc(f.nombre)}</div><div class="t2">Día ${f.dia} · ${FREQ[fq(f)]}${f.plastico?' · '+esc(f.plastico):''}</div></div><div class="am">${f.variable?'~':''}${fmt(f.importe,f.moneda)}</div></div>`).join('')}</div></details>`;
   h+=`<div class="actions"><button class="btn sec" onclick="openMetodo('${id}')">Editar tarjeta</button><button class="btn" onclick="closeSheet();openMov(null,{tipo:'transf',origen:'${m.cuentaPago||'cgal'}',destino:'${id}',importe:${prox?Math.round(prox.ars*100)/100:"''"},desc:'Pago ${esc(m.nombre)}'})">Registrar pago</button></div>`;
   $('#sheet').innerHTML=h;openSheet();bindTips();
 }
@@ -780,7 +880,7 @@ function regDesdeLinea(rid,i){const r=S.resumenes.find(x=>x.id===rid);const l=r.
 /* ============ Análisis y sugerencias ============ */
 function vAnal(){
   const ms=ultMeses(6);const T=ms.map(totales);
-  let h=`<div class="card"><h2>📊 Ingresos vs gastos (6 meses)</h2>${bars(ms.map(lblMes),[{n:'Ingresos',vals:T.map(t=>t.i),c:'var(--s3)'},{n:'Gastos',vals:T.map(t=>t.g),c:'var(--s2)'}],{label:'Ingresos y gastos'})}
+  let h=`<button class="btn full mb" onclick="go('flujo')">💧 Cashflow proyectado</button><div class="card"><h2>📊 Ingresos vs gastos (6 meses)</h2>${bars(ms.map(lblMes),[{n:'Ingresos',vals:T.map(t=>t.i),c:'var(--s3)'},{n:'Gastos',vals:T.map(t=>t.g),c:'var(--s2)'}],{label:'Ingresos y gastos'})}
   <div class="small">Con inflación, compará en % de tus ingresos, no en pesos nominales.</div></div>`;
   // compromisos de cuotas
   const fut=[];const[y,m]=today().split('-').map(Number);for(let k=0;k<6;k++){const[a,b]=addM(y,m-1,k);fut.push(a+'-'+pad(b+1))}
@@ -833,10 +933,12 @@ function sugerencias(){
   // cuotas sin interés: aprovechar fechas de cierre
   if(tarj.length){const prox=tarj.map(x=>({x,c:ciclo(x,hoy,0)})).sort((p,q)=>q.c.cierre<p.c.cierre?-1:1)[0];const d=dayDiff(prox.c.cierre,hoy);
     if(d>=0&&d<=3)out.push({e:'🗓️',n:'g',t:`${prox.x.nombre} cierra en ${d===0?'hoy':d+' días'}`,p:'Si podés postergar una compra grande hasta después del cierre, la pagás ~30 días más tarde. Con inflación, financiar sin interés a fin de ciclo te favorece.'})}
+  {const cf=cashflow(6);const ng=cf.find(r=>r.fin<0);if(ng)out.unshift({e:'🚨',n:'b',t:`Cashflow: saldo negativo en ${MESL[+ng.ym.slice(5)-1]}`,p:`Con los ingresos y compromisos cargados faltarían ${fmt(-ng.fin)}. Mirá el detalle en Cashflow proyectado.`});
+   else if(!S.ingProy.length&&S.movs.length>20)out.push({e:'💧',n:'',t:'Cargá tus ingresos proyectados',p:'Con sueldo, aguinaldo y otros cobros cargados en la Agenda, la app proyecta tu saldo mes a mes y te avisa faltantes.'})}
   // carga de deuda y fijos
   {const nx2=ymAdd(today().slice(0,7),1);const pr=S.prestamos.reduce((a,p)=>{const c=cuotaPrestamo(p,nx2);return a+(c?conv(+p.cuota,p.moneda,'ARS'):0)},0);
    const deuda=pr+cuotasNx;if(ingProm&&pr>0&&deuda/ingProm>0.3)out.push({e:'🏛️',n:'b',t:`Deuda: ${Math.round(deuda/ingProm*100)}% del ingreso`,p:`El mes próximo pagás ${fmt(pr)} de préstamos y ${fmt(cuotasNx)} de cuotas de tarjeta. Por encima de 30–35% conviene no tomar deuda nueva y priorizar cancelar la de mayor tasa.`});
-   const mens=S.fijos.filter(f=>f.activo!==false).reduce((a,f)=>a+conv(+f.importe||0,f.moneda,'ARS')/(+f.freq||1),0);
+   const mens=S.fijos.filter(f=>f.activo!==false).reduce((a,f)=>a+fMens(f),0);
    if(ingProm&&mens/ingProm>0.4){const top=[...S.fijos].filter(f=>f.activo!==false).sort((a,b)=>conv(b.importe,b.moneda,'ARS')/(b.freq||1)-conv(a.importe,a.moneda,'ARS')/(a.freq||1)).slice(0,3).map(f=>esc(f.nombre)).join(', ');
      out.push({e:'📌',n:'w',t:`Gastos fijos: ${Math.round(mens/ingProm*100)}% del ingreso`,p:`Equivalen a ${fmt(mens)}/mes. Los más pesados: ${top}. Revisá planes, pago anual con descuento (patente, inmobiliario suelen tenerlo) y seguros cotizando otra compañía.`})}
    const usd=movsMes(ym).filter(x=>x.tipo==='gasto'&&x.moneda==='USD'&&met(x.metodo)?.tipo==='credito').reduce((a,x)=>a+x.importe,0);
@@ -862,7 +964,7 @@ function vAjustes(){
    <button class="btn ghost full mt" onclick="exportCSV(true)">Exportar todo a CSV (Excel)</button>
    <button class="btn ghost full mt" onclick="demo()">Cargar datos de ejemplo</button>
    <button class="btn danger full mt" onclick="ask('¿Borrar TODOS los datos? No se puede deshacer.','Borrar todo',1).then(ok=>{if(ok){S=defaults();save();render()}})">Borrar todo</button></div>
-  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v1.1 · ${S.movs.length} movimientos</div>`;
+  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v1.2 · ${S.movs.length} movimientos</div>`;
   return h;
 }
 let MF=null;
@@ -927,7 +1029,7 @@ const xMes=v=>{if(v==null||v==='')return'';if(typeof v==='number')return xDate(v
 const xNum=v=>typeof v==='number'?v:(v==null||v===''?NaN:+numIn(String(v)));
 const xBool=v=>v===true||/^(s[ií]|si|x|1|true|yes)$/i.test(String(v??'').trim());
 const xMon=v=>/us|dol|u\$/i.test(String(v||''))?'USD':'ARS';
-function xFreq(v){if(typeof v==='number')return[1,2,3,6,12].includes(v)?v:1;const s=norm(v);return s.startsWith('bim')?2:s.startsWith('tri')?3:s.startsWith('sem')?6:s.startsWith('anu')?12:1}
+function xFreq(v){if(typeof v==='number')return[0,1,2,3,6,12].includes(v)?v:1;const s=norm(v);return s.startsWith('una')||s.startsWith('unica')||s.startsWith('unvez')?0:s.startsWith('bim')?2:s.startsWith('tri')?3:s.startsWith('sem')?6:s.startsWith('anu')?12:1}
 function findMet(v,tipos){const s=norm(v);if(!s)return null;const ms=S.metodos.filter(m=>!tipos||tipos.includes(m.tipo));return ms.find(m=>norm(m.nombre)===s)||ms.find(m=>norm(m.nombre).includes(s)||s.includes(norm(m.nombre)))||null}
 function guessCat(nombre,catTxt){const c=catTxt&&S.cats.find(x=>x.tipo==='gasto'&&(norm(x.nombre)===norm(catTxt)||norm(x.nombre).startsWith(norm(catTxt).slice(0,5))));if(c)return c.id;const s=norm(nombre);
   const R=[[/segur|lacaja|sancor|federacion|mapfre|zurich|allianz/,'seguros'],[/colegio|escuela|ingles|instituto|facultad|universidad|curso/,'educ'],[/mensualidad|cuotahija|hija|hijo|alimentos/,'familia'],[/edenor|edesur|edet|epe|luz|energia|electric|gas|agua|aysa|sat|internet|fibertel|telecentro|personal|movistar|claro|cable|flow|directv/,'serv'],
@@ -941,9 +1043,15 @@ async function importarPlanilla(file){if(!file)return;let book;try{book=await re
   IMPP={primera:0,cuotas:tablaHoja(hoja(/cuota/),{tarjeta:['tarjeta','via'],plastico:['plastico','titular','quien'],fecha:['fechaorigen','fechadecompra','fecha'],concepto:['concepto','detalle','descripcion'],moneda:['moneda'],total:['importetotal','total','importe'],n:['cantidadcuotas','cantidaddecuotas','cuotastotales','cuotas'],pend:['cuotaspendientes','pendientes','restantes'],cuota:['importecuota','valorcuota']}),
     fijos:tablaHoja(hoja(/fijo|debito|recurrent/),{concepto:['concepto','nombre','detalle'],categoria:['categoria','rubro'],via:['viadepago','via','tarjeta','mediodepago','formadepago'],plastico:['plastico','titular'],moneda:['moneda'],importe:['importemensual','importe','monto'],dia:['dia','diadevencimiento'],freq:['frecuencia'],variable:['variable','importevariable'],auto:['automatico','debitoautomatico','auto'],desde:['primervencimiento','desde','inicio'],hasta:['hasta','fin']}),
     prest:tablaHoja(hoja(/prestamo/),{nombre:['nombre','prestamo'],entidad:['entidad','banco'],moneda:['moneda'],cuota:['importecuota','cuota'],n:['cantidadcuotas','cantidaddecuotas','cuotastotales'],pagadas:['cuotaspagadas','pagadas'],proxima:['fechaproximacuota','proximacuota','proximovencimiento'],cuenta:['cuentadebito','cuenta','sedebitade'],capital:['capital'],tna:['tna','tasa'],auto:['debitoautomatico','automatico']})};
-  if(!IMPP.cuotas.length&&!IMPP.fijos.length&&!IMPP.prest.length)return toast('No encontré hojas con el formato de la plantilla');
+  IMPP.ing=tablaHoja(hoja(/ingreso|cobro/),{concepto:['concepto','nombre','detalle'],categoria:['categoria','rubro'],cuenta:['cuentadestino','cuenta','destino','sedeposita'],moneda:['moneda'],importe:['importe','monto'],dia:['diadecobro','dia'],freq:['frecuencia'],variable:['variable'],auto:['automatico','auto'],desde:['primercobro','mesdecobro','desde','inicio'],hasta:['hasta','fin']});
+  if(!IMPP.cuotas.length&&!IMPP.fijos.length&&!IMPP.prest.length&&!IMPP.ing.length)return toast('No encontré hojas con el formato de la plantilla');
   validarImp();drawImpP();openSheet()}
+function guessIngCat(nombre,catTxt){const c=catTxt&&S.cats.find(x=>x.tipo==='ingreso'&&norm(x.nombre)===norm(catTxt));if(c)return c.id;const s=norm(nombre);
+  if(/sueldo|haber|salario|aguinaldo|sac|bono|liex/.test(s))return'sueldo';if(/honorario|factura|consultor/.test(s))return'honor';if(/alquiler|renta|inquilin/.test(s))return'alq';if(/dividendo|interes|plazofijo|cupon|fci|bono|inversion/.test(s))return'inv';if(/reintegro|devolucion/.test(s))return'reint';return'oting'}
 function validarImp(){const hoy=today();
+  (IMPP.ing||[]).forEach(r=>{r.err='';r.m=findMet(r.cuenta,['cuenta','billetera','efectivo']);if(!r.m)r.err='Cuenta destino no encontrada';r.I=xNum(r.importe);if(!r.err&&!(r.I>0))r.err='Importe';if(!String(r.concepto||'').trim())r.err=r.err||'Concepto';
+    r.D=Math.min(31,Math.max(1,xNum(r.dia)||1));r.F=r.freq==null||r.freq===''?1:xFreq(r.freq);r.mon=xMon(r.moneda);r.de=xMes(r.desde)||hoy.slice(0,7);r.ha=r.F===0?'':xMes(r.hasta);r.cat=guessIngCat(r.concepto,r.categoria);r.var=xBool(r.variable);r.au=xBool(r.auto);
+    if(S.ingProy.some(f=>norm(f.nombre)===norm(r.concepto)&&f.destino===r.m?.id))r.dup=true});
   IMPP.cuotas.forEach(r=>{r.err='';r.m=findMet(r.tarjeta,['credito']);if(!r.m)r.err='Tarjeta no encontrada';r.f=xDate(r.fecha);r.N=xNum(r.n);r.P=xNum(r.pend);r.T=xNum(r.total);r.C=xNum(r.cuota);r.mon=xMon(r.moneda);
     if(!r.err&&!(r.N>=1))r.err='Cantidad de cuotas';if(!r.err&&!(r.P>=1&&r.P<=r.N))r.err='Cuotas pendientes';if(!r.err&&!(r.T>0)&&!(r.C>0))r.err='Importe';if(!r.err&&!r.f)r.err='Fecha origen';
     if(!(r.T>0)&&r.C>0)r.T=r.C*r.N;
@@ -965,7 +1073,8 @@ function drawImpP(){const I=IMPP;const st=r=>r.err?`<span class="chip b">⚠ ${e
     <div style="max-height:30vh;overflow:auto;margin-top:6px"><table class="t">${I.cuotas.map(r=>`<tr><td>${esc(r.concepto||'')}<div class="small">${esc(r.m?.nombre||r.tarjeta||'')}${r.pl?' · '+esc(r.pl)+(r.nuevoAd?' (nuevo adicional)':''):''} · ${r.f?fdia(r.f):''}</div></td><td class="n">${r.P||'?'}/${r.N||'?'}<div class="small">${r.T>0?fmt2((r.C>0?r.C:r.T/r.N),r.mon):''}</div></td><td>${st(r)}</td></tr>`).join('')}</table></div>`}
   if(I.fijos.length)h+=`<h3 style="font-size:15px;margin-top:12px">📌 Gastos fijos y débitos (${I.fijos.length})</h3><div style="max-height:26vh;overflow:auto"><table class="t">${I.fijos.map(r=>`<tr><td>${cat(r.cat).e} ${esc(r.concepto||'')}<div class="small">${esc(r.m?.nombre||r.via||'')}${r.pl?' · '+esc(r.pl):''} · día ${r.D} · ${FREQ[r.F]}${r.au?' · automático':''}</div></td><td class="n">${r.var?'~':''}${r.I>0?fmt(r.I,r.mon):''}</td><td>${st(r)}</td></tr>`).join('')}</table></div>`;
   if(I.prest.length)h+=`<h3 style="font-size:15px;margin-top:12px">🏛️ Préstamos (${I.prest.length})</h3><table class="t">${I.prest.map(r=>`<tr><td>${esc(r.nombre||'')}<div class="small">${esc(r.entidad||'')} · ${r.Pg}/${r.N||'?'} pagadas · próxima ${r.px?fdia(r.px):'?'}</div></td><td class="n">${r.C>0?fmt(r.C,r.mon):''}</td><td>${st(r)}</td></tr>`).join('')}</table>`;
-  const n=[...I.cuotas,...I.fijos,...I.prest].filter(r=>!r.err&&!r.dup).length;
+  if((I.ing||[]).length)h+=`<h3 style="font-size:15px;margin-top:12px">💰 Ingresos proyectados (${I.ing.length})</h3><table class="t">${I.ing.map(r=>`<tr><td>${cat(r.cat).e} ${esc(r.concepto||'')}<div class="small">→ ${esc(r.m?.nombre||r.cuenta||'')} · ${r.F===0?lblMes(r.de):'día '+r.D+' · '+FREQ[r.F]}${r.au?' · automático':''}</div></td><td class="n">${r.var?'~':''}${r.I>0?fmt(r.I,r.mon):''}</td><td>${st(r)}</td></tr>`).join('')}</table>`;
+  const n=[...I.cuotas,...I.fijos,...I.prest,...(I.ing||[])].filter(r=>!r.err&&!r.dup).length;
   h+=`<div class="actions"><button class="btn ghost" onclick="closeSheet()">Cancelar</button><button class="btn" ${n?'':'disabled style="opacity:.5"'} onclick="confirmarImp()">Importar ${n} registro${n===1?'':'s'}</button></div>`;
   $('#sheet').innerHTML=h}
 function confirmarImp(){const I=IMPP;const hoy=today();let c=0;
@@ -975,13 +1084,14 @@ function confirmarImp(){const I=IMPP;const hoy=today();let c=0;
   I.fijos.filter(r=>!r.err&&!r.dup).forEach(r=>{if(r.pl&&r.m.tipo==='credito'&&!(r.m.adicionales||[]).includes(r.pl)){r.m.adicionales.push(r.pl);if(!S.miembros.includes(r.pl))S.miembros.push(r.pl)}
     S.fijos.push({id:uid(),nombre:String(r.concepto).trim(),cat:r.cat,metodo:r.m.id,moneda:r.mon,importe:r.I,variable:r.var,dia:r.D,freq:r.F,desde:r.de,hasta:r.ha,auto:r.au,plastico:r.pl||'',activo:true,creadoF:hoy});c++});
   I.prest.filter(r=>!r.err&&!r.dup).forEach(r=>{S.prestamos.push({id:uid(),nombre:String(r.nombre).trim(),entidad:String(r.entidad||''),moneda:r.mon,cuota:r.C,n:r.N,pagadas:r.Pg,proxima:r.px,dia:+r.px.slice(8),cuenta:r.ct?.id||'',capital:xNum(r.capital)||'',tna:xNum(r.tna)||'',auto:r.au,creadoF:hoy});c++});
+  (I.ing||[]).filter(r=>!r.err&&!r.dup).forEach(r=>{S.ingProy.push({id:uid(),nombre:String(r.concepto).trim(),cat:r.cat,destino:r.m.id,moneda:r.mon,importe:r.I,variable:r.var,dia:r.D,freq:r.F,desde:r.de,hasta:r.ha,auto:r.au,activo:true,creadoF:hoy});c++});
   generarAuto();save();closeSheet();go('agenda');toast(`Importados ${c} registros ✔`)}
 
 /* ============ Datos de ejemplo ============ */
 async function demo(){if(S.movs.length&&!await ask('Se agregarán movimientos de ejemplo a tus datos. ¿Seguir?'))return;
   const r=(a,b)=>Math.round(a+Math.random()*(b-a));const base=new Date();const add=o=>S.movs.push(Object.assign({id:uid(),moneda:'ARS',quien:S.miembros[0],hora:pad(r(8,21))+':'+pad(r(0,59)),cuotas:1},o));
   for(let k=3;k>=0;k--){const[y,m]=addM(base.getFullYear(),base.getMonth(),-k);const f=d=>ymd(mkDate(y,m,d));const lim=k===0?base.getDate():28;const F=d=>f(Math.min(d,lim));
-    add({tipo:'ingreso',fecha:F(1),cat:'sueldo',importe:2400000,destino:'cgal',desc:'Sueldo'});
+    add({tipo:'ingreso',fecha:F(1),cat:'sueldo',importe:2400000,destino:'cgal',desc:'Sueldo',ingP:'dsueldo',ingMes:F(1).slice(0,7)});
     add({tipo:'transf',fecha:F(3),origen:'cgal',destino:'efe',importe:150000,desc:'Cajero Galicia'});
     add({tipo:'transf',fecha:F(15),origen:'cgal',destino:'efe',importe:100000,desc:'Cajero Galicia'});
     add({tipo:'gasto',fecha:F(5),cat:'serv',importe:r(38000,45000),metodo:'dgal',desc:'Edenor'});
@@ -1005,6 +1115,9 @@ async function demo(){if(S.movs.length&&!await ask('Se agregarán movimientos de
    ['Edenor (luz)','serv','vgal',48000,true,18,1,true],['Gas hogar','serv','cgal',22000,true,14,2,false],['Agua','serv','cgal',15000,true,12,2,false],['Internet','serv','vgal',29000,false,9,1,true],
    ['Seguro auto','seguros','mgal',95000,false,11,1,true],['Tasa municipal','imp','cgal',18000,false,15,2,false],['Patente auto','imp','cgal',62000,false,20,2,false],['Inmobiliario provincial','imp','cgal',41000,false,17,3,false]]
    .forEach(([nombre,cat,metodo,importe,variable,dia,freq,auto])=>{if(!S.fijos.some(f=>f.nombre===nombre))S.fijos.push({id:uid(),nombre,cat,metodo,moneda:'ARS',importe,variable,dia,freq,desde:ymP,hasta:'',auto,plastico:'',activo:true,creadoF:hoyF})});
+  if(!S.ingProy.some(f=>f.id==='dsueldo'))S.ingProy.push({id:'dsueldo',nombre:'Sueldo',cat:'sueldo',destino:'cgal',moneda:'ARS',importe:2400000,variable:false,dia:1,freq:1,desde:ymAdd(ym0,-3),hasta:'',auto:false,activo:true,creadoF:hoyF},
+    {id:uid(),nombre:'Aguinaldo',cat:'sueldo',destino:'cgal',moneda:'ARS',importe:1200000,variable:false,dia:18,freq:6,desde:'2026-06',hasta:'',auto:false,activo:true,creadoF:hoyF},
+    {id:uid(),nombre:'Alquiler departamento',cat:'alq',destino:'mp',moneda:'ARS',importe:450000,variable:false,dia:10,freq:1,desde:ym0,hasta:'',auto:false,activo:true,creadoF:hoyF});
   if(!S.prestamos.length)S.prestamos.push({id:uid(),nombre:'Préstamo personal Galicia',entidad:'Banco Galicia',moneda:'ARS',cuota:185000,n:24,pagadas:7,proxima:ymAdd(ym0,-2)+'-10',dia:10,cuenta:'cgal',capital:3000000,tna:52,auto:true,creadoF:hoyF});
   const cm=ciclo(met('vicbc'),today(),0).cierre;add({tipo:'gasto',fecha:ymAdd(ym0,-8)+'-15',cat:'viaje',importe:1800000,cuotas:12,pend:4,ancla:cm,metodo:'vicbc',desc:'Pasajes (importado)',importKey:'demo1'});
   generarAuto();

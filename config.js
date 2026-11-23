@@ -6,7 +6,7 @@
 //  Mientras esté vacío, la app funciona igual pero sin compartir.
 // =====================================================================
 window.CC_CONFIG = {
-  supabaseUrl: "https://gdfmahriakbxbdtidkbi.supabase.co/rest/v1/",   // ej: "https://abcdefgh.supabase.co"
-  supabaseKey: "sb_publishable_FI66OEXUjmwIvXgMEHh1xg_tY7NIkkN",   // la "Publishable key" (o "anon public key") del proyecto
-  vapidPublic: ""    // clave PÚBLICA de notificaciones (la genera la app)
+  supabaseUrl: "https://gdfmahriakbxbdtidkbi.supabase.co",
+  supabaseKey: "sb_publishable_FI66OEXUjmwIvXgMEHh1xg_tY7NIkkN",
+  vapidPublic: "BIjLvUiDDDAUK1OSxq1j2Z9Tx2F_Tzh0uB-VOaVVGeVDEotvxYWVw7hVqKK8nZjuMMYPUK_EWzN25y0FEGIDhfk"
 };

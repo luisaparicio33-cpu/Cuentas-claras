@@ -991,7 +991,7 @@ function vAjustes(){
   <div class="card"><h2 data-h="compartidas">☁️ Tarjetas compartidas${hi('compartidas')}</h2><p class="small" style="margin-top:0">Para titulares con adicionales: los gastos del adicional te llegan al instante, con aviso en el teléfono.</p>
    <button class="btn full" onclick="openCuenta()">${cloudOK()?(CL().nombre?'☁️ Mi cuenta compartida':'Crear cuenta / ingresar'):'Configurar'}</button></div>
   <div class="card"><h2>❓ Ayuda</h2><p class="small" style="margin-top:0">Tutorial, guía de cada pantalla y glosario de palabras financieras.</p><button class="btn full" onclick="openAyuda()">Abrir ayuda</button></div>
-  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v2.0 · ${S.movs.length} movimientos</div>`;
+  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v2.0.1 · ${S.movs.length} movimientos</div>`;
   return h;
 }
 let MF=null;
@@ -1133,7 +1133,8 @@ function confirmarImp(){const I=IMPP;const hoy=today();let c=0;
   generarAuto();save();closeSheet();go('agenda');toast(`Importados ${c} registros ✔`)}
 
 /* ============ Nube: tarjetas adicionales compartidas (Supabase) ============ */
-const CFG=()=>{const a=window.CC_CONFIG||{},b=S.cfg.cloudCfg||{};const o={};['supabaseUrl','supabaseKey','vapidPublic'].forEach(k=>o[k]=(b[k]||a[k]||'').trim());return o};
+const cleanUrl=u=>{u=String(u||'').trim();if(!u)return'';const d=u.match(/supabase\.com\/dashboard\/project\/([a-z0-9]+)/i);if(d)return'https://'+d[1]+'.supabase.co';if(!/^https?:\/\//i.test(u))u='https://'+u;try{return new URL(u).origin}catch(e){return u}};
+const CFG=()=>{const a=window.CC_CONFIG||{},b=S.cfg.cloudCfg||{};const o={};['supabaseUrl','supabaseKey','vapidPublic'].forEach(k=>o[k]=String(b[k]||a[k]||'').trim());o.supabaseUrl=cleanUrl(o.supabaseUrl);return o};
 const cloudOK=()=>{const c=CFG();return!!(c.supabaseUrl&&c.supabaseKey)};
 const CL=()=>{if(!S.cloud)S.cloud={vinculos:{},queue:[],lastPull:''};S.cloud.vinculos=S.cloud.vinculos||{};S.cloud.queue=S.cloud.queue||[];return S.cloud};
 const esAdic=m=>!!(m&&m.compartida&&m.compartida.rol==='adicional');
@@ -1275,7 +1276,7 @@ function openServidor(){const c=CFG();const fromFile=!!(window.CC_CONFIG&&window
   <div class="two mt"><button class="btn sec" onclick="guardarServidor(true)">Probar conexión</button><button class="btn" onclick="guardarServidor(false)">Guardar</button></div>
   <button class="btn ghost full mt" onclick="copiarConfig()">📄 Copiar config.js (para GitHub)</button>
   <p class="small">Subir <b>config.js</b> a GitHub hace que tu familia reciba la app ya configurada: el adicional solo crea su cuenta.</p>`;openSheet()}
-async function guardarServidor(probar){S.cfg.cloudCfg={supabaseUrl:$('#svU').value.trim().replace(/\/+$/,''),supabaseKey:$('#svK').value.trim(),vapidPublic:$('#svV').value.trim()};save();_sb=null;_rt=null;
+async function guardarServidor(probar){S.cfg.cloudCfg={supabaseUrl:cleanUrl($('#svU').value),supabaseKey:$('#svK').value.trim(),vapidPublic:$('#svV').value.trim()};save();_sb=null;_rt=null;
   if(!probar){toast('Guardado');return openCuenta()}
   try{const sb=await sbc();const{error}=await sb.from('vinculos').select('id',{head:true,count:'exact'});if(error)throw error;toast('✅ Conexión correcta con el servidor')}catch(x){dlg(`<h3>No conecta</h3><p class="small">${esc(errTxt(x))}</p><p class="small">Revisá la URL, la key y que hayas ejecutado el script SQL.</p><div class="actions"><button class="btn" onclick="dlgClose()">Cerrar</button></div>`)}}
 function copiarConfig(){const c=CFG();const t=`window.CC_CONFIG = {\n  supabaseUrl: ${JSON.stringify(c.supabaseUrl)},\n  supabaseKey: ${JSON.stringify(c.supabaseKey)},\n  vapidPublic: ${JSON.stringify(c.vapidPublic)}\n};\n`;window._ccTxt=t;

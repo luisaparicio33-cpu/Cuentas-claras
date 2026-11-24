@@ -71,8 +71,8 @@ nav.bot .fab{flex:none!important;min-width:0!important;background:linear-gradien
 .seg button{flex:1;border:0;background:none;padding:9px 6px;border-radius:9px;font-weight:600;color:var(--ink2);cursor:pointer;font-size:14px}
 .seg button.on{background:var(--card);color:var(--pri);box-shadow:var(--shadow)}
 .seg.gasto button.on{color:var(--bad)}.seg .ing.on{color:var(--good)!important}
-label.f{display:block;margin:12px 0 0}
-label.f>span{display:block;font-size:12px;color:var(--ink2);margin-bottom:5px;font-weight:600}
+label.f,div.f{display:block;margin:12px 0 0}
+label.f>span,div.f>span{display:block;font-size:12px;color:var(--ink2);margin-bottom:5px;font-weight:600}
 input.in,select.in,textarea.in{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:11px 12px;outline:none}
 input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--pri)}
 .amount{font-size:34px;font-weight:800;text-align:center;border:0!important;background:transparent!important;padding:6px!important;font-variant-numeric:tabular-nums}
@@ -387,7 +387,7 @@ function legend(data){const tot=data.reduce((a,d)=>a+d.v,0);return`<div class="l
 /* ============ Vista: Inicio ============ */
 function vInicio(){
   const t=totales(MES_ACT);const ef=efectivoMes(MES_ACT);const sal=saldos();const cb=catBreak(MES_ACT);
-  const tarjetas=S.metodos.filter(m=>m.tipo==='credito');const ag=agendaMes(MES_ACT);const mesN=MESL[+MES_ACT.slice(5)-1];
+  const tarjetas=S.metodos.filter(m=>m.tipo==='credito');const da=deudaAcum(MES_ACT);const ag=da.ag;const mesN=MESL[+MES_ACT.slice(5)-1];
   let h=`<div class="kpis" data-h="kpis">
    <div class="kpi"><div class="l">⬆️ Ingresos</div><div class="v pos">${fmt(t.i)}</div><div class="s">${mesN}</div></div>
    <div class="kpi"><div class="l">⬇️ Gastos</div><div class="v neg">${fmt(t.g)}</div><div class="s">${t.i?Math.round(t.g/t.i*100)+'% de ingresos':'—'}</div></div>
@@ -396,7 +396,7 @@ function vInicio(){
   </div>`;
   const pend=ag.items.filter(i=>i.estado!=='pagado').slice(0,3);
   h+=`<div class="card" onclick="go('agenda')" style="cursor:pointer"><h2 data-h="compromisos">📌 Compromisos de ${mesN}${hi('compromisos')}<span class="sp"></span><span class="small">${ag.pagados}/${ag.items.length} pagados</span></h2>
-   <div class="row" style="justify-content:space-between"><div><div class="small">Pendiente</div><b style="font-size:19px" class="${ag.pend>0?'neg':'pos'}">${fmt(ag.pend)}</b></div><div style="text-align:right"><div class="small">Comprometido</div><b>${fmt(ag.total)}</b></div></div>
+   <div class="row" style="justify-content:space-between"><div><div class="small">Pendiente acumulado</div><b style="font-size:19px" class="${da.total>0.5?'neg':'pos'}">${fmt(da.total)}</b>${da.atras>0.5?`<div class="small neg">incluye ${fmt(da.atras)} de meses anteriores</div>`:''}</div><div style="text-align:right"><div class="small">Comprometido</div><b>${fmt(ag.total)}</b></div></div>
    <div class="bar mt"><i style="width:${ag.total?Math.min(100,ag.pag/ag.total*100):0}%;background:var(--good)"></i></div>
    ${pend.length?`<div class="list mt">${pend.map(itemAgenda).join('')}</div>`:''}</div>`;
   {const cf=cashflow(6);const mn=cf.reduce((a,r)=>r.fin<a.fin?r:a,cf[0]);
@@ -465,7 +465,7 @@ function generarAuto(){let n=0;const hoy=today(),ymH=hoy.slice(0,7);
   if(n){save();setTimeout(()=>toast(`📌 ${n} débito${n>1?'s':''} automático${n>1?'s':''} registrado${n>1?'s':''}`),900)}return n}
 const cobroIng=(f,ym)=>S.movs.find(x=>x.ingP===f.id&&x.ingMes===ym);
 function cobrosMes(ym){const hoy=today();const it=[];
-  S.ingProy.forEach(f=>{const d=fijoVence(f,ym);if(!d)return;const mv=cobroIng(f,ym);const sk=S.skip['i'+f.id+'|'+ym];
+  S.ingProy.forEach(f=>{if(f.creadoF&&ym<f.creadoF.slice(0,7))return;const d=fijoVence(f,ym);if(!d)return;const mv=cobroIng(f,ym);const sk=S.skip['i'+f.id+'|'+ym];
     it.push({f,ym,fecha:d,mov:mv,monto:mv?ars(mv):conv(+f.importe||0,f.moneda,'ARS'),estado:(mv||sk)?'cobrado':d<hoy?'atrasado':'pendiente'})});
   return it.sort((a,b)=>a.fecha<b.fecha?-1:1)}
 function actCobro(c){const f=c.f;const fe=c.fecha<=today()?c.fecha:today();
@@ -510,7 +510,8 @@ function cashflow(n){const hoy=today(),ym0=hoy.slice(0,7);const C=corrienteMes()
     S.prestamos.forEach(p=>{const c=cuotaPrestamo(p,ym);if(!c||pagoPrest(p,c.k))return;const v=conv(+p.cuota,p.moneda,'ARS');r.prest+=v;r.det.prest.push([p.nombre+' '+c.k+'/'+p.n,v,c.fecha])});
     S.fijos.forEach(f=>{const m=met(f.metodo);if(m&&m.tipo==='credito')return;const d=fijoVence(f,ym);if(!d||pagoFijo(f,ym)||S.skip[f.id+'|'+ym])return;const v=conv(+f.importe||0,f.moneda,'ARS')*fx;r.fijos+=v;r.det.fijos.push([f.nombre,v,d])});
     if(k===0){const g=S.movs.filter(x=>esCorriente(x)&&x.fecha.slice(0,7)===ym).reduce((a,x)=>a+ars(x),0);r.corr=Math.max(0,C-g);r.gastado=g}else r.corr=C*fx;
-    r.egr=r.tarj+r.prest+r.fijos+r.corr;r.neto=r.ing-r.egr;r.ini=saldo;saldo+=r.neto;r.fin=saldo;out.push(r)}
+    if(k===0){const da=deudaAcum(ym);r.atras=da.atras;r.det.atras=da.venc.map(i=>[i.nombre+' ('+lblMes(i.mes)+')',i.resta,i.fecha])}else r.atras=0;
+    r.egr=r.tarj+r.prest+r.fijos+r.corr+r.atras;r.neto=r.ing-r.egr;r.ini=saldo;saldo+=r.neto;r.fin=saldo;out.push(r)}
   return out}
 function lineChart(labels,vals,opt){opt=opt||{};const W=340,H=opt.h||170,pl=42,pb=22,pt=14;const mn=Math.min(0,...vals),mx=Math.max(0,...vals);
   const top=mx>0?niceMax(mx):0,bot=mn<0?-niceMax(-mn):0;const rng=(top-bot)||1;const Y=v=>pt+(H-pb-pt)*(top-v)/rng;const n=labels.length;const X=i=>pl+10+(W-pl-20)*(n===1?0.5:i/(n-1));
@@ -542,7 +543,7 @@ function vFlujo(){const cf=cashflow(FLH);const liq=liquidezHoy();const C=corrien
 function detFlujo(i){const r=cashflow(FLH)[i];const sec=(t,e,arr,tot,cls)=>`<tr><td colspan="2" style="padding-top:12px"><b>${e} ${t}</b></td><td class="n ${cls}"><b>${fmt(tot)}</b></td></tr>${arr.map(([n,v,f])=>`<tr><td class="small">${fdia(f)}</td><td>${esc(n)}</td><td class="n">${fmt(v)}</td></tr>`).join('')}`;
   let h=`<div class="grab"></div><h3>Cashflow ${MESL[+r.ym.slice(5)-1]} ${r.ym.slice(0,4)}<button class="x" onclick="closeSheet()">✕</button></h3>
   <table class="t"><tr><td colspan="2">Saldo inicial${i===0?' (liquidez hoy)':''}</td><td class="n"><b>${fmt(r.ini)}</b></td></tr>
-  ${sec('Ingresos'+(i===0?' pendientes':''),'⬆️',r.det.ing,r.ing,'pos')}${sec('Tarjetas','💳',r.det.tarj,r.tarj,'neg')}${sec('Préstamos','🏛️',r.det.prest,r.prest,'neg')}${sec('Gastos fijos','📌',r.det.fijos,r.fijos,'neg')}
+  ${sec('Ingresos'+(i===0?' pendientes':''),'⬆️',r.det.ing,r.ing,'pos')}${sec('Tarjetas','💳',r.det.tarj,r.tarj,'neg')}${r.atras?sec('Impagos de meses anteriores','⚠️',r.det.atras,r.atras,'neg'):''}${sec('Préstamos','🏛️',r.det.prest,r.prest,'neg')}${sec('Gastos fijos','📌',r.det.fijos,r.fijos,'neg')}
   <tr><td colspan="2" style="padding-top:12px"><b>🛒 Gasto corriente</b>${i===0?`<div class="small">Estimado ${fmt(corrienteMes())} − ya gastado ${fmt(r.gastado)}</div>`:''}</td><td class="n neg"><b>${fmt(r.corr)}</b></td></tr>
   <tr><td colspan="2" style="padding-top:12px"><b>Neto del mes</b></td><td class="n ${r.neto<0?'neg':'pos'}"><b>${fmt(r.neto)}</b></td></tr><tr><td colspan="2"><b>Saldo final</b></td><td class="n ${r.fin<0?'neg':''}"><b>${fmt(r.fin)}</b></td></tr></table>
   <div class="actions"><button class="btn" onclick="closeSheet()">Listo</button></div>`;
@@ -555,11 +556,11 @@ function agendaMes(ym){const hoy=today();const items=[];const est=(pagado,fecha)
     const ok=pg.length&&pa>=r.ars-1&&(r.usd<0.5||pu>=r.usd-0.5||pa>=r.total-1);
     items.push({k:'tarjeta',e:'💳',nombre:'Resumen '+m.nombre,fecha:r.venc,monto:r.total,txt:fmtAU(r.ars,r.usd),sub:r.items.some(c=>c.est)?'incluye débitos estimados':'cierre '+fdia(r.cierre),estado:ok?'pagado':est(false,r.venc),pagadoMonto:Math.min(r.total,pa+pu*tc()),
       act:`openMov(null,{tipo:'transf',origen:'${m.cuentaPago||''}',destino:'${m.id}',importe:${Math.round(r.ars*100)/100},desc:'Pago ${esc(m.nombre)}'})`})})});
-  S.prestamos.forEach(p=>{const c=cuotaPrestamo(p,ym);if(!c)return;const pg=pagoPrest(p,c.k);
+  S.prestamos.forEach(p=>{if(p.creadoF&&ym<p.creadoF.slice(0,7))return;const c=cuotaPrestamo(p,ym);if(!c)return;const pg=pagoPrest(p,c.k);
     items.push({k:'prest',e:'🏛️',nombre:p.nombre,fecha:c.fecha,monto:conv(+p.cuota,p.moneda,'ARS'),txt:fmt(pg?pg.importe:p.cuota,p.moneda),sub:'Cuota '+c.k+'/'+p.n+(p.auto?' · débito automático':''),estado:est(pg,c.fecha),mov:pg&&pg.id,
       act:`openMov(null,{tipo:'gasto',cat:'prest',metodo:'${p.cuenta||''}',importe:${+p.cuota},moneda:'${p.moneda||'ARS'}',desc:'${esc(p.nombre)} cuota ${c.k}/${p.n}',prest:'${p.id}',prestCuota:${c.k}})`})});
   const enTarjeta=[];
-  S.fijos.forEach(f=>{const d=fijoVence(f,ym);if(!d)return;const m=met(f.metodo);const pg=pagoFijo(f,ym);const sk=S.skip[f.id+'|'+ym];
+  S.fijos.forEach(f=>{if(f.creadoF&&ym<f.creadoF.slice(0,7))return;const d=fijoVence(f,ym);if(!d)return;const m=met(f.metodo);const pg=pagoFijo(f,ym);const sk=S.skip[f.id+'|'+ym];
     if(m&&m.tipo==='credito'){enTarjeta.push({f,d,pg});return}
     const v=pg?ars(pg):conv(+f.importe||0,f.moneda,'ARS');
     items.push({k:'fijo',e:cat(f.cat).e,nombre:f.nombre,fecha:d,monto:v,txt:(pg?'':(f.variable?'~':''))+fmt(pg?pg.importe:f.importe,f.moneda),sub:(m?m.nombre:'')+(f.auto?' · débito automático':'')+(pg&&pg.est?' · estimado':''),estado:sk?'pagado':est(pg,d),mov:pg&&pg.id,
@@ -568,11 +569,19 @@ function agendaMes(ym){const hoy=today();const items=[];const est=(pagado,fecha)
   const total=items.reduce((a,i)=>a+i.monto,0),pag=items.filter(i=>i.estado==='pagado').reduce((a,i)=>a+(i.pagadoMonto??i.monto),0);
   return{items,enTarjeta,total,pag,pend:Math.max(0,total-pag),pagados:items.filter(i=>i.estado==='pagado').length};
 }
+function deudaAcum(ym){const ini=[S.movs.reduce((a,m)=>!m.ancla&&(!a||m.fecha<a)?m.fecha:a,''),...S.fijos.map(f=>f.creadoF||''),...S.prestamos.map(p=>p.creadoF||'')].filter(Boolean).sort()[0];
+  const f0=ini?ini.slice(0,7):ym;let atras=0;const venc=[];
+  for(let k=12;k>=1;k--){const m=ymAdd(ym,-k);if(m<f0)continue;agendaMes(m).items.forEach(i=>{if(i.estado==='pagado')return;const v=Math.max(0,i.monto-(i.pagadoMonto||0));if(v>0.5){atras+=v;venc.push(Object.assign({},i,{mes:m,resta:v}))}})}
+  const ag=agendaMes(ym);return{atras,mes:ag.pend,total:atras+ag.pend,venc,ag}}
 function itemAgenda(i){const chip={pagado:'<span class="chip g">✔ pagado</span>',pendiente:'<span class="chip">pendiente</span>',vencido:'<span class="chip b">vencido</span>'}[i.estado];
   return`<div class="it" onclick="event.stopPropagation();${i.mov?`openMov('${i.mov}')`:i.act}"><div class="ico">${i.e}</div><div class="tx"><div class="t1">${esc(i.nombre)}</div><div class="t2">${fdia(i.fecha)} · ${esc(i.sub||'')}</div></div><div class="am">${i.txt}<div style="margin-top:3px">${i.estado==='pagado'?chip:`<button class="btn sm ${i.estado==='vencido'?'danger':'sec'}" onclick="event.stopPropagation();${i.act}">${i.k==='tarjeta'?'Pagar':'Registrar'}</button>`}</div></div></div>`}
-function vAgenda(){const ag=agendaMes(MES_ACT);const mesN=MESL[+MES_ACT.slice(5)-1];
+function vAgenda(){const da=deudaAcum(MES_ACT);const ag=da.ag;const mesN=MESL[+MES_ACT.slice(5)-1];
   const mens=S.fijos.filter(f=>f.activo!==false).reduce((a,f)=>a+fMens(f),0);
-  let h=`<div class="kpis" data-h="agKpis"><div class="kpi"><div class="l">📌 Comprometido</div><div class="v">${fmt(ag.total)}</div><div class="s">${mesN}</div></div><div class="kpi"><div class="l">⏳ Pendiente</div><div class="v ${ag.pend>0?'neg':'pos'}">${fmt(ag.pend)}</div><div class="s">${ag.pagados}/${ag.items.length} pagados</div></div></div>
+  let h=`<div class="kpis" data-h="agKpis"><div class="kpi"><div class="l">📌 Comprometido del mes</div><div class="v">${fmt(ag.total)}</div><div class="s">${ag.pagados}/${ag.items.length} pagados</div></div><div class="kpi"><div class="l">⏳ Pendiente del mes</div><div class="v ${ag.pend>0?'neg':'pos'}">${fmt(ag.pend)}</div><div class="s">${mesN}</div></div></div>
+  <div class="card" data-h="acum" style="border:2px solid ${da.total>0.5?'var(--bad)':'var(--good)'}"><h2>🧮 Saldo pendiente acumulado a ${mesN}${hi('acum')}</h2>
+   <div style="font-size:28px;font-weight:800" class="${da.total>0.5?'neg':'pos'}">${fmt(da.total)}</div>
+   <table class="t mt"><tr><td>Pendiente de ${mesN}</td><td class="n">${fmt(da.mes)}</td></tr><tr><td>Impago de meses anteriores</td><td class="n ${da.atras>0.5?'neg':''}">${fmt(da.atras)}</td></tr></table>
+   ${da.venc.length?`<details class="mt"${da.venc.length<=4?' open':''}><summary>⚠️ ${da.venc.length} compromiso${da.venc.length>1?'s':''} de meses anteriores sin pagar</summary><div class="list">${da.venc.map(i=>itemAgenda(Object.assign({},i,{sub:lblMes(i.mes)+' · '+(i.sub||''),txt:fmt(i.resta)}))).join('')}</div><div class="small mt">Si ya los pagaste, tocá <b>Registrar</b> para que dejen de figurar como deuda.</div></details>`:'<div class="small mt">✅ No hay compromisos impagos de meses anteriores.</div>'}</div>
   <div class="card"><h2 data-h="venc">🗓️ Vencimientos de ${mesN}${hi('venc')}</h2>${ag.items.length?`<div class="list">${ag.items.map(itemAgenda).join('')}</div>`:'<div class="empty">Sin vencimientos este mes. Cargá tus gastos fijos y préstamos abajo.</div>'}
    <div class="small mt">Los resúmenes de tarjeta ya incluyen las cuotas y los débitos automáticos de esa tarjeta.</div></div>`;
   {const cb=cobrosMes(MES_ACT);const pc=cb.filter(c=>c.estado!=='cobrado').reduce((a,c)=>a+c.monto,0);
@@ -666,11 +675,11 @@ function drawMov(){
   <div class="seg" data-h="fTipo"><button class="${g?'on':''}" style="${g?'color:var(--bad)':''}" onclick="F.tipo='gasto';F.cat='';drawMov()">Gasto</button><button class="${i?'on':''}" style="${i?'color:var(--good)':''}" onclick="F.tipo='ingreso';F.cat='';drawMov()">Ingreso</button><button class="${t?'on':''}" onclick="F.tipo='transf';drawMov()">Extracción / Transf.</button></div>
   <div class="row" style="margin-top:12px;justify-content:center"><select class="in" style="width:auto;padding:6px 8px" onchange="F.moneda=this.value;drawMov()"><option ${F.moneda==='ARS'?'selected':''}>ARS</option><option ${F.moneda==='USD'?'selected':''}>USD</option></select></div>
   <input class="in amount" id="fImp" inputmode="decimal" placeholder="$ 0" value="${F.importe===''?'':String(F.importe).replace('.',',')}" oninput="F.importe=numIn(this.value);updCuota()">`;
-  if(g)h+=`<label class="f" data-h="fVia"><span>Vía de pago ${hi('via')}</span><div class="hscroll">${S.metodos.map(x=>`<button class="pill ${F.metodo===x.id?'on':''}" onclick="F.metodo='${x.id}';drawMov()">${icoMet(x)} ${esc(x.nombre)}</button>`).join('')}</div></label>`;
-  if(!t){h+=`<label class="f" data-h="fCat"><span>Concepto ${hi('concepto')}</span><div class="grid-chips">${cats.map(c=>`<div class="gc ${F.cat===c.id?'on':''}" onclick="F.cat='${c.id}';drawMov()"><span class="e">${c.e}</span>${esc(c.nombre)}</div>`).join('')}</div></label>`}
+  if(g)h+=`<div class="f" data-h="fVia"><span>Vía de pago ${hi('via')}</span><div class="hscroll">${S.metodos.map(x=>`<button class="pill ${F.metodo===x.id?'on':''}" onclick="F.metodo='${x.id}';drawMov()">${icoMet(x)} ${esc(x.nombre)}</button>`).join('')}</div></div>`;
+  if(!t){h+=`<div class="f" data-h="fCat"><span>Concepto ${hi('concepto')}</span><div class="grid-chips">${cats.map(c=>`<div class="gc ${F.cat===c.id?'on':''}" onclick="F.cat='${c.id}';drawMov()"><span class="e">${c.e}</span>${esc(c.nombre)}</div>`).join('')}</div></div>`}
   h+=`<label class="f"><span>Descripción</span><input class="in" placeholder="${t?'Ej: Cajero Galicia':'Ej: Coto, nafta YPF, Netflix…'}" value="${esc(F.desc)}" oninput="F.desc=this.value" list="dl"></label><datalist id="dl">${[...new Set(S.movs.map(x=>x.desc).filter(Boolean))].slice(-60).map(d=>`<option value="${esc(d)}">`).join('')}</datalist>`;
   if(g){
-    if(m&&m.tipo==='credito'){h+=`<label class="f" data-h="fCuotas"><span>Forma de pago ${hi('cuotas')}</span><div class="row" style="justify-content:space-between"><div class="seg" style="flex:1"><button class="${F.cuotas<=1?'on':''}" onclick="F.cuotas=1;drawMov()">Un pago</button><button class="${F.cuotas>1?'on':''}" onclick="F.cuotas=Math.max(2,F.cuotas);drawMov()">En cuotas</button></div></div></label>`;
+    if(m&&m.tipo==='credito'){h+=`<div class="f" data-h="fCuotas"><span>Forma de pago ${hi('cuotas')}</span><div class="row" style="justify-content:space-between"><div class="seg" style="flex:1"><button class="${F.cuotas<=1?'on':''}" onclick="F.cuotas=1;drawMov()">Un pago</button><button class="${F.cuotas>1?'on':''}" onclick="F.cuotas=Math.max(2,F.cuotas);drawMov()">En cuotas</button></div></div></div>`;
       if(F.cuotas>1)h+=`<div class="row mt" style="justify-content:space-between"><div class="stepper"><button onclick="F.cuotas=Math.max(2,F.cuotas-1);drawMov()">−</button><b>${F.cuotas}</b><button onclick="F.cuotas=Math.min(48,F.cuotas+1);drawMov()">+</button></div><div class="hscroll">${[3,6,9,12,18].map(n=>`<button class="pill ${F.cuotas===n?'on':''}" onclick="F.cuotas=${n};drawMov()">${n}</button>`).join('')}</div></div><div class="small mt" id="cuotaInfo"></div>`;
       else h+=`<div class="small mt" id="cuotaInfo"></div>`;}
   }
@@ -991,7 +1000,7 @@ function vAjustes(){
   <div class="card"><h2 data-h="compartidas">☁️ Tarjetas compartidas${hi('compartidas')}</h2><p class="small" style="margin-top:0">Para titulares con adicionales: los gastos del adicional te llegan al instante, con aviso en el teléfono.</p>
    <button class="btn full" onclick="openCuenta()">${cloudOK()?(CL().nombre?'☁️ Mi cuenta compartida':'Crear cuenta / ingresar'):'Configurar'}</button></div>
   <div class="card"><h2>❓ Ayuda</h2><p class="small" style="margin-top:0">Tutorial, guía de cada pantalla y glosario de palabras financieras.</p><button class="btn full" onclick="openAyuda()">Abrir ayuda</button></div>
-  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v2.0.4 · ${S.movs.length} movimientos</div>`;
+  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v2.1 · ${S.movs.length} movimientos</div>`;
   return h;
 }
 let MF=null;
@@ -1304,7 +1313,7 @@ const HELP={
  filtros:['🎛️ Filtros','Tocá <b>Gastos</b>, <b>Ingresos</b> o <b>Transferencias</b> para ver solo ese tipo. La fila de abajo filtra por tarjeta o cuenta. Para corregir o borrar un movimiento, tocalo.'],
  compartidas:['🔗 Tarjetas compartidas','Sirve si tenés <b>tarjetas adicionales</b> (por ejemplo, la de tu pareja).<br><br>1. El <b>titular</b> entra a la tarjeta (Ajustes → Vías de pago), toca <b>🔗 Vincular</b> al lado del adicional y le manda el código por WhatsApp.<br>2. El <b>adicional</b> instala la app, crea su cuenta e ingresa el código.<br><br>Desde ese momento, cada gasto que el adicional carga con esa tarjeta <b>le aparece al titular al instante</b>, con una notificación. El resto de los gastos de cada uno sigue siendo privado.'],
  kpis:['📊 Tu mes en números','<b>Ingresos</b>: toda la plata que entró (sueldo, cobros). <b>Gastos</b>: todo lo que gastaste. <b>Resultado</b>: la diferencia. Si es verde, ese mes ahorraste; si es rojo, gastaste más de lo que entró.<br><br>El cuadro <b>Efectivo sin registrar</b> avisa si sacaste plata del cajero y no anotaste en qué la usaste.<br><br>Para ver otro mes usá las flechas ‹ › de arriba.'],
- compromisos:['📌 Compromisos del mes','Son los pagos que <b>sí o sí</b> tenés que hacer este mes: resúmenes de tarjeta, cuotas de préstamos y gastos fijos (colegio, luz, impuestos…).<br><br>La barra verde muestra cuánto ya pagaste. Tocá esta sección para ir a la <b>Agenda</b> y marcar lo que vas pagando.'],
+ compromisos:['📌 Compromisos del mes','Son los pagos que <b>sí o sí</b> tenés que hacer este mes: resúmenes de tarjeta, cuotas de préstamos y gastos fijos (colegio, luz, impuestos…).<br><br>El número grande es el <b>pendiente acumulado</b>: lo de este mes más lo que quedó sin pagar de meses anteriores. La barra verde muestra cuánto del mes ya pagaste. Tocá esta sección para ir a la <b>Agenda</b> y marcar lo que vas pagando.'],
  cashflow:['💧 Cashflow (flujo de fondos)','Es una <b>proyección de cuánta plata vas a tener</b> a fin de cada mes.<br><br>La cuenta es simple:<br><b>lo que tenés hoy + lo que vas a cobrar − lo que vas a pagar = lo que te va a quedar</b>.<br><br>Si la línea baja de cero, te avisa con tiempo para que te organices (postergar una compra, no tomar cuotas nuevas, etc.).'],
  tarjetas:['💳 Tus tarjetas de crédito','Cada tarjeta muestra cuánto vas a pagar en el <b>próximo resumen</b> y cuántos días faltan para el vencimiento.<br><br>• <b>Cierre</b>: el día en que la tarjeta "corta" y arma el resumen.<br>• <b>Vencimiento</b>: el último día para pagarlo sin recargos.<br><br>Lo que comprás <b>después del cierre</b> se paga un mes más tarde. Tocá una tarjeta para ver el detalle compra por compra.'],
  categorias:['🧩 ¿En qué se va la plata?','El círculo muestra cómo se reparten tus gastos del mes por <b>concepto</b> (súper, combustible, servicios…). Cuanto más grande la porción, más gastaste ahí.<br><br>Tocá o pasá el dedo por el gráfico para ver el importe exacto.'],
@@ -1317,6 +1326,7 @@ const HELP={
  fijos:['📌 Gastos fijos','Son los gastos que se repiten: colegio, inglés, mensualidades, luz, gas, agua, internet, impuestos, patente, seguros.<br><br>Cargalos <b>una vez</b> y la app te los recuerda cada mes.<br>• <b>Automático</b>: se anota solo (para débitos automáticos).<br>• <b>Lo confirmo yo</b>: queda pendiente hasta que lo pagues.<br>• <b>Variable</b>: para facturas que cambian (luz, gas); cargás un estimado y después lo corregís.'],
  prest:['🏛️ Préstamos','Para préstamos de <b>cuota fija</b> (la misma cuota todos los meses). Cargás la cuota, cuántas son, cuántas ya pagaste y la fecha de la próxima.<br><br>La app te avisa cada vencimiento y te muestra cuánto falta pagar. Si cargás el capital y la tasa, también ves cuánto de cada cuota es interés.'],
  impPlan:['📥 Importar desde Excel','Si tenés muchos datos, podés cargarlos de una sola vez con una planilla: cuotas pendientes, gastos fijos, préstamos e ingresos.<br><br>1. Descargá la <b>Plantilla</b>.<br>2. Completala en Excel o Google Sheets (las filas que dicen EJEMPLO se ignoran).<br>3. Tocá <b>Importar</b> y elegí el archivo. Vas a ver todo antes de confirmar.'],
+ acum:['🧮 Saldo pendiente acumulado','Es lo que <b>todavía debés pagar hasta este mes</b>: lo pendiente del mes más todo lo que quedó <b>sin pagar de meses anteriores</b> (resúmenes, cuotas de préstamos, gastos fijos).<br><br>Si ya pagaste algo y figura acá, es porque no lo registraste: tocá <b>Registrar</b> y desaparece de la deuda.<br><br>Si mirás un mes futuro, supone que no pagás nada de lo anterior: así ves cuánto se acumularía.'],
  agKpis:['📌 Resumen de la Agenda','<b>Comprometido</b>: el total de pagos del mes (tarjetas, préstamos, gastos fijos). <b>Pendiente</b>: lo que todavía no pagaste.'],
  impRes:['📥 Importar un resumen','Cuando te llega el resumen de la tarjeta o del banco, subilo acá (PDF, CSV o copiando el texto). La app lo compara con lo que anotaste y te muestra:<br>✔ lo que coincide,<br>⚠ lo que está en el resumen y <b>no anotaste</b> (con botón para cargarlo),<br>✖ lo que anotaste y <b>no aparece</b>,<br>🏦 comisiones e intereses que te cobraron.'],
  concTabs:['🔗 Conciliar','"Conciliar" es <b>comparar</b> lo que anotaste con lo que dice el banco, para encontrar olvidos, errores o cobros que no reconocés.<br><br><b>Resúmenes</b>: tarjetas, bancos y billeteras. <b>Efectivo</b>: controla la plata que sacaste del cajero.'],
@@ -1363,7 +1373,7 @@ const TOURS={
   ['#helpBtn','❓ Ayuda','Tutorial completo, glosario de palabras y repetir estas guías cuando quieras.<br><br>Además, en cada sección hay un botón <b class="hi" style="display:inline-block">i</b> que explica para qué sirve.']],
  inicio:['kpis','compromisos','cashflow','tarjetas','categorias','cuentas'],
  movs:['buscar','filtros'],
- agenda:['agKpis','venc','cobros','ingproy','fijos','prest','impPlan'],
+ agenda:['agKpis','acum','venc','cobros','ingproy','fijos','prest','impPlan'],
  flujo:['flHor','ingEgr','saldoProy','detalle','supuestos'],
  conc:['concTabs','impRes','efeMes','arqueo'],
  anal:['analFlujo','ingGas','comprom','catProm','propuestas'],

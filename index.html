@@ -1239,7 +1239,7 @@ function vAjustes(){
   <div class="card"><h2 data-h="compartidas">☁️ Tarjetas compartidas${hi('compartidas')}</h2><p class="small" style="margin-top:0">Para titulares con adicionales: los gastos del adicional te llegan al instante, con aviso en el teléfono.</p>
    <button class="btn full" onclick="openCuenta()">${cloudOK()?(CL().nombre?'☁️ Mi cuenta compartida':'Crear cuenta / ingresar'):'Configurar'}</button></div>
   <div class="card"><h2>❓ Ayuda</h2><p class="small" style="margin-top:0">Tutorial, guía de cada pantalla y glosario de palabras financieras.</p><button class="btn full" onclick="openAyuda()">Abrir ayuda</button></div>
-  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v3.0 · ${S.movs.length} movimientos</div>`;
+  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v3.0.1 · ${S.movs.length} movimientos</div>`;
   return h;
 }
 let MF=null;
@@ -1485,7 +1485,7 @@ const u8b64u=u=>btoa(String.fromCharCode(...new Uint8Array(u))).replace(/\+/g,'-
 async function activarPush(){try{if(!('serviceWorker' in navigator)||!('PushManager' in window)||!navigator.serviceWorker.controller&&!(await navigator.serviceWorker.getRegistration()))throw new Error('Las notificaciones necesitan la app instalada desde Chrome (no funcionan dentro de otro visor).');
     const vp=CFG().vapidPublic;if(!vp)throw new Error('Falta la clave pública de notificaciones en la configuración del servidor.');
     const perm=await Notification.requestPermission();if(perm!=='granted')throw new Error('No diste permiso. Activalo en Ajustes del teléfono → Notificaciones → Chrome / Cuentas Claras.');
-    const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(vp)});
+    const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();if(sub){let ok=false;try{const k=sub.options&&sub.options.applicationServerKey;ok=!!k&&u8b64u(k)===vp.replace(/=+$/,'')}catch(_){}if(!ok){try{await sub.unsubscribe()}catch(_){}sub=null}}if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(vp)});
     const j=sub.toJSON();const sb=await sbc();const row={endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth,lang:EN()?'en':'es'};let{error}=await sb.from('push_subs').upsert(row);if(error&&/lang/.test(error.message||'')){delete row.lang;({error}=await sb.from('push_subs').upsert(row))}if(error)throw error;CL().push=true;save();toast('🔔 Notificaciones activadas');openCuenta()}
   catch(x){dlg(`<h3>No se pudieron activar</h3><p class="small">${esc(errTxt(x))}</p><div class="actions"><button class="btn" onclick="dlgClose()">Cerrar</button></div>`)}}
 async function probarPush(){try{const sb=await sbc();const{data,error}=await sb.functions.invoke('notificar',{body:{test:true}});if(error)throw error;

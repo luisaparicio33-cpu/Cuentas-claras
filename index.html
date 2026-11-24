@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#2a3fbf">
+<meta name="theme-color" content="#2457d6">
 <meta name="description" content="Finanzas personales y familiares: gastos, cuotas, tarjetas, conciliación de resúmenes y efectivo.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
@@ -146,23 +146,68 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
 .tl{display:flex;align-items:center;gap:4px;margin:10px 0;font-size:12px}
 .tl div{flex:1;border-radius:10px;padding:7px 4px;text-align:center}
 .gl dt{font-weight:700;margin-top:12px}.gl dd{margin:3px 0 0;color:var(--ink2);font-size:14px;line-height:1.45}
+
+/* ===== v4 · estilo billetera ===== */
+:root{--bg:#eef0f5;--line:#e4e6ee;--pri:#2457d6;--pri2:#3b6cf0;--priSoft:#e6edfd;--r:16px;--shadow:0 1px 3px rgba(20,30,60,.07),0 1px 1px rgba(20,30,60,.04);--hc:#2457d6}
+body[data-hc=bad]{--hc:#cf3a3a}body[data-hc=vio]{--hc:#5b45c9}
+:root[data-theme="dark"]{--bg:#0e1014;--card:#1a1c22;--line:#2a2c34;--pri:#7d9cf7;--pri2:#9ab3fa;--priSoft:#1d2846}
+:root[data-theme="dark"] body{--hc:#1d3a86}:root[data-theme="dark"] body[data-hc=bad]{--hc:#862a2a}:root[data-theme="dark"] body[data-hc=vio]{--hc:#3d3189}
+header.top{background:var(--hc)!important;padding-bottom:10px}
+.card,.kpi{border:0}:root[data-theme="dark"] .card,:root[data-theme="dark"] .kpi,:root[data-theme="dark"] .spot{border:1px solid var(--line)}
+nav.bot .fab{background:var(--pri)!important;box-shadow:0 4px 14px rgba(36,87,214,.35)}
+.btn{background:var(--pri)}
+.hero{margin:-14px -14px 0;padding:2px 18px 42px;background:var(--hc);color:#fff}
+.hero .hl{font-size:12.5px;opacity:.88}.hero .hv{font-size:30px;font-weight:800;line-height:1.15;margin-top:2px;font-variant-numeric:tabular-nums}.hero .hs{font-size:12.5px;opacity:.9;margin-top:2px}
+.ovl{margin-top:-30px;position:relative}
+.pseg{display:flex;gap:4px;margin-top:4px}.pseg button{flex:1;border:0;border-radius:999px;padding:6px 0;background:rgba(255,255,255,.17);color:#fff;font-size:12.5px;font-weight:600;cursor:pointer}.pseg button.on{background:#fff;color:var(--hc)}
+.lbl{font-size:12.5px;color:var(--ink2);font-weight:700;margin:14px 4px 6px}
+.home{display:flex;flex-direction:column;min-height:var(--avail,0px)}
+.home .hhome{padding-bottom:34px;min-height:34px}
+.g22 .spot{justify-content:flex-start}.g22 .spot>div:last-child{margin-top:auto;margin-bottom:auto}
+.g22 .spot svg{height:clamp(54px,10.5vh,108px);width:auto}
+.ctl{font-size:clamp(12px,1.55vh,13.5px)!important;line-height:1.75!important}
+.gdn{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}.gdn .lgm{width:100%}
+.ctl>div span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-height:700px){.ss2{display:none}.gdn{flex-direction:row}.g22 .spot svg{height:52px}}
+
+.ovl>.lbl:first-child{color:rgba(255,255,255,.92);margin-top:0}.home .ovl{flex:1;display:flex;flex-direction:column;gap:8px}
+.spot{background:var(--card);border-radius:16px;padding:11px 12px;box-shadow:var(--shadow);cursor:pointer;min-width:0;display:flex;flex-direction:column;justify-content:space-between;gap:4px;border:1px solid transparent}
+.spot.alert{border-color:var(--bad)!important}
+.spot .sl{font-size:12.5px;color:var(--ink2);display:flex;justify-content:space-between;align-items:center;gap:6px;font-weight:600;white-space:nowrap}
+.spot .sl .ch{color:var(--muted);font-size:16px;line-height:1}
+.spot .sv{font-size:clamp(16px,2.5vh,21px);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spot .sv.big{font-size:clamp(21px,3.4vh,27px)}
+.spot .ss{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g22{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-auto-rows:1fr;gap:8px}
+.chips3{display:flex;gap:6px}.chips3 span{flex:1;text-align:center;background:var(--bg);border-radius:9px;padding:5px 2px;font-size:11.5px;white-space:nowrap;color:var(--ink2);overflow:hidden}
+.sbar{display:flex;gap:2px;height:7px;border-radius:9px;overflow:hidden;margin:5px 0 4px;background:var(--line)}.sbar i{display:block;height:100%}
+.lgm{font-size:11.5px;line-height:1.55;min-width:0;flex:1}.lgm>div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lgm i{display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:4px}.lgm b{font-weight:700}
+.ctl{font-size:12px;line-height:1.5}.ctl>div{display:flex;justify-content:space-between;gap:6px}.ctl span{color:var(--ink2)}.ctl b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.spot.libre{flex-direction:row;align-items:center;gap:10px;background:var(--goodSoft)}.spot.libre .sl,.spot.libre .sv{color:var(--good)}.spot.libre .li{font-size:24px}
+.spot.libre .ins{font-size:11.5px;color:var(--good);text-align:right;line-height:1.35;white-space:nowrap}
+.spot.libre.mal{background:var(--badSoft)}.spot.libre.mal .sl,.spot.libre.mal .sv,.spot.libre.mal .ins{color:var(--bad)}
+.rub{padding:8px 0;border-bottom:1px solid var(--line)}.rub:last-of-type{border-bottom:0}.rub .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.rbar{display:flex;height:8px;border-radius:9px;background:var(--bg);overflow:hidden;margin-top:5px}.rbar i{display:block;height:100%}
+.cmp{font-size:11px;font-weight:700;color:var(--muted);margin-left:2px}.cmp.neg{color:var(--bad)}.cmp.pos{color:var(--good)}
+details.card>summary{font-weight:700;font-size:13px;color:var(--ink2)}
+.priv .amt,.priv .kpi .v,.priv .it .am,.priv .cc .v,.priv td.n,.priv .hero .hv{filter:blur(7px)}
 </style>
 </head>
 <body>
 <header class="top">
+  <button id="backBtn" class="hbtn" onclick="atras()" aria-label="Volver" style="display:none;font-size:22px;line-height:1">‹</button>
   <h1 id="ttl">Cuentas Claras</h1>
-  <button id="helpBtn" class="hbtn" onclick="openAyuda()" aria-label="Ayuda">?</button>
-  <button class="hbtn" data-h="gear" onclick="go('ajustes')" aria-label="Ajustes" style="font-size:16px">⚙️</button>
   <div class="mes" id="mesSel"><button onclick="moveMes(-1)" aria-label="Mes anterior">‹</button><span id="mesLbl"></span><button onclick="moveMes(1)" aria-label="Mes siguiente">›</button></div>
+  <button id="eyeBtn" class="hbtn" data-h="eye" onclick="togPriv()" aria-label="Ocultar importes" style="font-size:16px">👁</button>
+  <button id="helpBtn" class="hbtn" onclick="openAyuda()" aria-label="Ayuda">?</button>
 </header>
 <main id="view"></main>
 <nav class="bot">
   <button data-v="inicio" onclick="go('inicio')"><span class="i">🏠</span>Inicio</button>
   <button data-v="movs" onclick="go('movs')"><span class="i">📋</span>Movim.</button>
   <button class="fab" data-h="fab" onclick="openMov()" aria-label="Cargar movimiento">+</button>
-  <button data-v="agenda" onclick="go('agenda')"><span class="i">📌</span>Agenda</button>
-  <button data-v="conc" onclick="go('conc')"><span class="i">🔗</span>Conciliar</button>
   <button data-v="anal" onclick="go('anal')"><span class="i">📊</span>Análisis</button>
+  <button data-v="ajustes" data-h="gear" onclick="go('ajustes')"><span class="i">⚙️</span>Ajustes</button>
 </nav>
 <div class="sheet-bg" id="sheetBg" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
@@ -172,6 +217,8 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
 <script src="config.js"></script>
 <script>
 window.TR_DICT={
+// --- v4 ---
+"⚖️ Resultado del mes":"⚖️ This month's balance","· Gastos":"· Expenses","Mes":"Month","Trim":"Qtr","Sem":"6 mo","Año":"Year","🔴 Vencido":"🔴 Overdue","✅ Vencido":"✅ Overdue","Vencido":"Overdue","{0} deuda · desde {1}":"{0} debt · since {1}","{0} deudas · desde {1}":"{0} debts · since {1}","Al día":"Up to date","Sin deudas vencidas":"No overdue debts","📅 Por vencer":"📅 Coming due","Por vencer":"Coming due","Este mes":"This month","Próximo mes":"Next month","Después":"Later","🧩 Gastos":"🧩 Expenses","🏦 Cuentas":"🏦 Accounts","Cuentas":"Accounts","Bancos":"Banks","Tarjetas":"Cards","Compromisos":"Commitments","Libre para gastar · {0} días":"Free to spend · {0} days","Libre para gastar · {0} día":"Free to spend · {0} day","{0} por día":"{0} per day","Este mes no alcanza":"Not enough this month","Faltan {0}":"Short by {0}","Ver detalle ›":"See details ›","Ahorro":"Savings","Hola, {0}":"Hi, {0}","Todavía no hay gastos este mes. Tocá":"No expenses yet this month. Tap","+{0} rubros":"+{0} categories","📦 Otros":"📦 Other","Resultado":"Balance","📊 Ingresos y gastos":"📊 Income and expenses","· ahorro {0}%":"· savings {0}%","Fin de {0} {1}":"End of {0} {1}","⚠️ {0} cierra en negativo:":"⚠️ {0} ends negative:","✅ Sin faltantes en los próximos {0} meses":"✅ No shortfalls in the next {0} months","💰 Ingresos":"💰 Income","Sin ingresos registrados.":"No income recorded.","Ver por rubro ›":"See by category ›","🗓️ Mes por mes":"🗓️ Month by month","📌 Ingresos proyectados, gastos fijos y préstamos":"📌 Expected income, recurring expenses and loans","Deudas vencidas sin pagar":"Unpaid overdue debts","{0} compromiso impago":"{0} unpaid commitment","{0} compromisos impagos":"{0} unpaid commitments","Deudas vencidas":"Overdue debts","✅ Estás al día":"✅ You're up to date","No tenés pagos atrasados":"You have no late payments","Adeudado desde {0} · {1} meses":"Owed since {0} · {1} months","Adeudado desde {0} · {1} mes":"Owed since {0} · {1} month","y cambiá el importe si pagás solo una parte: el resto sigue pendiente.":"and change the amount if you only pay part: the rest stays pending.","+ Deuda olvidada":"+ Forgotten debt","📌 Agenda completa":"📌 Full planner","📌 Agenda":"📌 Planner","🔗 Conciliar":"🔗 Reconcile","¿De qué mes es la deuda?":"Which month is the debt from?","Total a pagar · próximos {0} meses":"Total to pay · next {0} months","· próximo":"· next","No tenés vencimientos próximos.":"You have no upcoming due dates.","Tarjetas y préstamos: los próximos {0} meses. Gastos fijos: este mes y el próximo.":"Cards and loans: next {0} months. Recurring expenses: this month and next.","Vencimientos por mes":"Due dates by month","incluye":"includes","estimados sin confirmar":"unconfirmed estimates","todo confirmado":"all confirmed","No hay gastos en este período.":"No expenses in this period.","🧩 Todos los rubros":"🧩 All categories","nuevo":"new","Tramo claro = estimado sin confirmar (gastos fijos y cuotas que todavía no registraste).":"Light segment = unconfirmed estimate (recurring expenses and installments not recorded yet).","Comparado con el período anterior.":"Compared with the previous period.","📈 Últimos {0} meses":"📈 Last {0} months","Resto":"Rest","📊 Análisis y propuestas de ahorro":"📊 Insights and savings suggestions","Gastos por mes":"Spending by month","Patrimonio neto":"Net worth","Tenés":"You have","· Debés":"· You owe","Sin contar compromisos:":"Excluding commitments:","Disponible ·":"Available ·","Tarjetas ·":"Cards ·","Compromisos ·":"Commitments ·","{0} sin registrar este mes":"{0} unrecorded this month","Agregá tus cuentas en Ajustes.":"Add your accounts in Settings.","Próximo resumen {0} · vence {1}":"Next statement {0} · due {1}","Próximo resumen {0} · vence {1} {2}":"Next statement {0} · due {1} {2}","Sin tarjetas de crédito.":"No credit cards.","La deuda total incluye las cuotas futuras.":"Total debt includes future installments.","Tarjetas que te comparten":"Cards shared with you","El resumen lo paga {0}":"Statement paid by {0}","{0} cuotas restantes · cuota {1}":"{0} installments left · installment {1}","{0} gastos fijos o pagos atrasados ›":"{0} late recurring expenses or payments ›","Sin compromisos 🎉":"No commitments 🎉","🧮 Arqueo":"🧮 Cash count","⚙️ Editar cuentas y tarjetas":"⚙️ Edit accounts and cards","💰 Libre para gastar":"💰 Free to spend","Lo que tenés hoy (efectivo, bancos y billeteras)":"What you have today (cash, banks and wallets)","+ Lo que falta cobrar este mes":"+ Income still to come this month","− Lo que vence este mes":"− What's due this month","− Lo atrasado":"− Overdue","Libre hasta fin de mes":"Free until month end","Días que quedan":"Days left","Por día":"Per day","Lo que compres con tarjeta de crédito lo pagás con el resumen del mes que viene.":"Credit card purchases are paid with next month's statement.","Ver cashflow":"See cash flow","Ocultar importes":"Hide amounts","Mostrar importes":"Show amounts","Importes ocultos":"Amounts hidden","Importes visibles":"Amounts visible","Volver":"Back","Cerrar":"Close","Entendido":"Got it",
 // --- navegación y títulos ---
 "Inicio":"Home","Movim.":"Activity","Agenda":"Planner","Conciliar":"Reconcile","Análisis":"Insights","Ajustes":"Settings","Ayuda":"Help","Movimientos":"Activity","Conciliación":"Reconciliation","Cashflow proyectado":"Projected cash flow",
 "Mes anterior":"Previous month","Mes siguiente":"Next month","Cargar movimiento":"Add transaction","¿Qué es esto?":"What is this?",
@@ -509,16 +556,23 @@ function efectivoMes(ym){
 /* ============ Navegación ============ */
 function lblMes(ym){const[y,m]=ym.split('-').map(Number);return MES[m-1]+' '+String(y).slice(2)}
 function moveMes(k){const[y,m]=MES_ACT.split('-').map(Number);const[a,b]=addM(y,m-1,k);MES_ACT=a+'-'+pad(b+1);render()}
-function go(v){VIEW=v;window.scrollTo(0,0);render()}
+const ROOTS=['inicio','movs','anal','ajustes'];let HIST=[];
+function go(v){if(ROOTS.includes(v))HIST=[];else if(v!==VIEW){HIST.push(VIEW);try{history.pushState({cc:1},'')}catch(e){}}VIEW=v;window.scrollTo(0,0);render()}
+function back(){VIEW=HIST.pop()||'inicio';window.scrollTo(0,0);render()}
+function atras(){if(history.state&&history.state.cc)history.back();else back()}
 function render(){
   S.movs.forEach(m=>delete m._c);S.resumenes.forEach(r=>{try{conciliar(r)}catch(e){}});
-  document.querySelectorAll('nav.bot button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===(VIEW==='flujo'?'agenda':VIEW)));
+  const NAVOF={dres:'inicio',dven:'inicio',dpv:'inicio',dgas:'inicio',dcta:'inicio',agenda:'inicio',flujo:'inicio',conc:'movs'};
+  document.querySelectorAll('nav.bot button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===(NAVOF[VIEW]||VIEW)));
   $('#mesLbl').textContent=lblMes(MES_ACT);
-  $('#mesSel').style.visibility=(VIEW==='ajustes'||VIEW==='conc'||VIEW==='flujo')?'hidden':'visible';
-  const V={inicio:vInicio,movs:vMovs,agenda:vAgenda,flujo:vFlujo,conc:vConc,anal:vAnal,ajustes:vAjustes}[VIEW]||vInicio;
+  $('#mesSel').style.display=['ajustes','conc','flujo','dven','dpv','dcta'].includes(VIEW)?'none':'';
+  $('#backBtn').style.display=ROOTS.includes(VIEW)?'none':'';
+  const hc={dven:'bad',dgas:'vio'}[VIEW]||'';document.body.dataset.hc=hc;
+  try{document.querySelector('meta[name=theme-color]').content=(document.documentElement.dataset.theme==='dark'?{bad:'#862a2a',vio:'#3d3189'}[hc]||'#1d3a86':{bad:'#cf3a3a',vio:'#5b45c9'}[hc]||'#2457d6')}catch(e){}
+  const V={inicio:vInicio,movs:vMovs,agenda:vAgenda,flujo:vFlujo,conc:vConc,anal:vAnal,ajustes:vAjustes,dres:vRes,dven:vVen,dpv:vPv,dgas:vGas,dcta:vCta}[VIEW]||vInicio;
   $('#view').innerHTML=V();
-  $('#ttl').innerHTML=VIEW==='inicio'?'Cuentas Claras':{movs:'Movimientos',agenda:'Agenda',flujo:'Cashflow proyectado',conc:'Conciliación',anal:'Análisis',ajustes:'Ajustes'}[VIEW];
-  bindTips();setTimeout(maybeTour,650);
+  $('#ttl').innerHTML=VIEW==='inicio'?'Cuentas Claras':{movs:'Movimientos',agenda:'Agenda',flujo:'Cashflow proyectado',conc:'Conciliación',anal:'Análisis',ajustes:'Ajustes',dres:'Resultado',dven:'Vencido',dpv:'Por vencer',dgas:'Gastos',dcta:'Cuentas'}[VIEW];
+  applyPriv();fitHome();bindTips();setTimeout(maybeTour,650);
 }
 
 /* ============ Gráficos SVG ============ */
@@ -572,48 +626,156 @@ function catBreak(ym){const m={};movsMes(ym).filter(x=>x.tipo==='gasto').forEach
   return top.map((d,i)=>Object.assign(d,{c:COLORS[i]}));}
 function legend(data){const tot=data.reduce((a,d)=>a+d.v,0);return`<div class="legend">${data.map(d=>`<div class="lg"><i class="dot" style="background:${d.c}"></i><span class="n">${esc(d.l)}</span><b>${fmt(d.v)}</b><span class="small" style="width:30px;text-align:right;flex:none">${Math.round(d.v/tot*100)}%</span></div>`).join('')}</div>`}
 
+/* ============ v4: Inicio por spots + pantallas de detalle ============ */
+const fmtC=(n,cur)=>{const a=Math.abs(n||0);if(a<1e4)return fmt(n,cur);return new Intl.NumberFormat(LOC(),{style:'currency',currency:cur||M1(),notation:'compact',maximumFractionDigits:a>=1e6?2:0}).format(n||0)};
+const sg=v=>(v>0.5?'+ ':'')+fmt(v);
+const PERC={m:'Mes',t:'Trim',s:'Sem',a:'Año',tot:'Total'};
+let PER='m';
+function perYms(per,ym){ym=ym||MES_ACT;const n={m:1,t:3,s:6}[per];if(n)return Array.from({length:n},(_,i)=>ymAdd(ym,i-n+1));
+  if(per==='a'){const k=+ym.slice(5);return Array.from({length:k},(_,i)=>ym.slice(0,4)+'-'+pad(i+1))}
+  const f=S.movs.reduce((a,m)=>!m.ancla&&m.fecha&&(!a||m.fecha<a)?m.fecha:a,'');let x=f&&f.slice(0,7)<ym?f.slice(0,7):ym;const r=[];while(x<=ym&&r.length<240){r.push(x);x=ymAdd(x,1)}return r}
+function resPer(per,ym){let i=0,g=0;perYms(per,ym).forEach(y=>{const t=totales(y);i+=t.i;g+=t.g});return{i,g,r:i-g}}
+function perTxt(per){const y=perYms(per);const a=y[0],b=y[y.length-1];return y.length===1?MESL[+a.slice(5)-1]+' '+a.slice(0,4):lblMes(a)+' – '+lblMes(b)}
+function perSeg(){return`<div class="pseg" data-h="perSeg">${['m','t','s','a','tot'].map(k=>`<button class="${PER===k?'on':''}" onclick="PER='${k}';render()">${PERC[k]}</button>`).join('')}</div>`}
+function vencidos(){const hoy=today(),ymH=hoy.slice(0,7);const da=deudaAcum(ymH);const L=da.venc.map(i=>Object.assign({},i));
+  da.ag.items.forEach(i=>{if(i.estado==='pagado'||i.fecha>=hoy)return;const v=Math.max(0,i.monto-(i.pagadoMonto||0));if(v>0.5)L.push(Object.assign({},i,{mes:ymH,resta:v}))});
+  L.sort((a,b)=>a.fecha<b.fecha?-1:1);return{items:L,total:L.reduce((a,i)=>a+i.resta,0)}}
+function porVencer(n){n=n||12;const hoy=today(),ym0=hoy.slice(0,7);const meses=[];
+  for(let k=0;k<n;k++){const ym=ymAdd(ym0,k);const its=agendaMes(ym).items.filter(i=>i.estado!=='pagado'&&i.fecha>=hoy&&!(i.k==='fijo'&&k>1)).map(i=>Object.assign({},i,{mes:ym,resta:Math.max(0,i.monto-(i.pagadoMonto||0))})).filter(i=>i.resta>0.5);
+    meses.push({ym,items:its,tot:its.reduce((a,i)=>a+i.resta,0)})}
+  return{meses,total:meses.reduce((a,m)=>a+m.tot,0)}}
+function gastosCat(yms,soloReal){const ymH=today().slice(0,7);const m={};const add=(c,v,e)=>{const o=m[c]=m[c]||{r:0,e:0};if(e)o.e+=v;else o.r+=v};
+  yms.forEach(ym=>{movsMes(ym).forEach(x=>{if(x.tipo==='gasto')add(x.cat,ars(x),!!x.est)});
+    if(!soloReal&&ym>=ymH){S.fijos.forEach(f=>{if(f.activo===false||f.puntual)return;const st=inicioFijo(f);if(st&&ym<st)return;if(!fijoVence(f,ym))return;const e=estadoFijo(f,ym);if(e.full)return;add(f.cat||'otros',e.resta,1)});
+      S.prestamos.forEach(p=>{const c=cuotaPrestamo(p,ym);if(!c)return;const e=estadoPrest(p,c.k);if(e.full)return;add('prest',e.resta,1)})}});
+  return Object.entries(m).map(([k,o])=>({id:k,r:o.r,e:o.e,v:o.r+o.e})).filter(d=>d.v>0.5).sort((a,b)=>b.v-a.v)}
+function topCats(gc,n){const top=gc.slice(0,n-1).map(d=>Object.assign({},d));const rest=gc.slice(n-1);
+  if(rest.length===1)top.push(Object.assign({},rest[0]));else if(rest.length)top.push({id:'_otros',r:rest.reduce((a,d)=>a+d.r,0),e:rest.reduce((a,d)=>a+d.e,0),v:rest.reduce((a,d)=>a+d.v,0),n:rest.length});
+  return top.map((d,i)=>Object.assign(d,{c:COLORS[i],l:d.id==='_otros'?'📦 Otros':cat(d.id).e+' '+cat(d.id).nombre}))}
+function donut2(data,size,center){const tot=data.reduce((a,d)=>a+d.v,0);if(!tot)return'';const w=Math.max(9,size*0.16),r=size/2-w/2-1,cx=size/2;let a0=-Math.PI/2,p='';
+  const arc=(s,e,c,op,tip)=>{if(e-s<=0.001)return'';if(e-s>=Math.PI*2-0.001)return`<circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="${c}" stroke-width="${w}" opacity="${op}" data-tip="${esc(tip)}"/>`;const L=e-s>Math.PI?1:0;
+    return`<path d="M${(cx+r*Math.cos(s)).toFixed(2)},${(cx+r*Math.sin(s)).toFixed(2)} A${r},${r} 0 ${L} 1 ${(cx+r*Math.cos(e)).toFixed(2)},${(cx+r*Math.sin(e)).toFixed(2)}" fill="none" stroke="${c}" stroke-width="${w}" opacity="${op}" data-tip="${esc(tip)}"/>`};
+  const gap=data.length>1?0.035:0;
+  data.forEach(d=>{const a=d.v/tot*Math.PI*2;const s=a0+gap/2,e=a0+a-gap/2;const m=s+(e-s)*(d.r/d.v);const tip=d.l+': '+fmt(d.v)+' ('+Math.round(d.v/tot*100)+'%)';p+=arc(s,m,d.c,1,tip)+arc(m,e,d.c,.38,tip);a0+=a});
+  return`<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="Distribución" style="flex:none">${p}${center||''}</svg>`}
+function spark(vals,w,h){const mn=Math.min(...vals),mx=Math.max(...vals),rg=(mx-mn)||1;const X=i=>2+(w-6)*i/(vals.length-1||1),Y=v=>h-3-(h-6)*(v-mn)/rg;const last=vals[vals.length-1];const c=last>=0?'var(--good)':'var(--bad)';
+  return`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true" style="flex:none">${mn<0&&mx>0?`<line x1="0" x2="${w}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--line)" stroke-dasharray="3 3"/>`:''}<polyline points="${vals.map((v,i)=>X(i).toFixed(1)+','+Y(v).toFixed(1)).join(' ')}" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"/><circle cx="${X(vals.length-1)}" cy="${Y(last)}" r="3" fill="${c}"/></svg>`}
+function cuentasRes(ven){const s=saldos();const v=m=>conv(s[m.id]||0,m.moneda||M1(),M1());
+  const efe=S.metodos.filter(m=>m.tipo==='efectivo'),ban=S.metodos.filter(m=>m.tipo==='cuenta'),bil=S.metodos.filter(m=>m.tipo==='billetera');
+  const tj=S.metodos.filter(m=>m.tipo==='credito'&&!esAdic(m));const deu=m=>(s[m.id]||0)+conv((s._usd||{})[m.id]||0,M2()||M1(),M1());
+  const pr=S.prestamos.map(p=>{const e=estadoPrestamo(p);return{p,e,v:conv(e.cap!==null?e.cap:e.nominal,p.moneda||M1(),M1())}}).filter(x=>x.v>0.5);
+  const vc=(ven||vencidos()).items.filter(i=>i.k!=='tarjeta'&&i.k!=='prest');
+  const E=efe.reduce((a,m)=>a+v(m),0),B=ban.reduce((a,m)=>a+v(m),0),W=bil.reduce((a,m)=>a+v(m),0),T=tj.reduce((a,m)=>a+deu(m),0),P=pr.reduce((a,x)=>a+x.v,0),V=vc.reduce((a,i)=>a+i.resta,0);
+  return{s,v,deu,efe,ban,bil,tj,pr,vc,E,B,W,T,P,V,disp:E+B+W,comp:P+V,neto:E+B+W-T-P-V,netoSC:E+B+W-T}}
+function libre(){const r=cashflow(1)[0];const d=new Date();const dias=daysIn(d.getFullYear(),d.getMonth())-d.getDate()+1;const L=r.fin+r.corr;return{r,L,dias,dia:L/dias}}
+function insight(){const ym=MES_ACT,pv=ymAdd(ym,-1);const a=gastosCat([ym],1),b=gastosCat([pv],1);const tot=a.reduce((x,d)=>x+d.r,0);let best=null;
+  a.forEach(d=>{const o=b.find(x=>x.id===d.id);if(!o||o.r<1||d.r<tot*0.05)return;const p=d.r/o.r-1;if(p>0.1&&(!best||p>best.p))best={id:d.id,p}});
+  if(best)return`${cat(best.id).e} ${esc(cat(best.id).nombre)}<br><b>+${Math.round(best.p*100)}%</b> vs ${MES[+pv.slice(5)-1]}`;
+  const t=totales(ym);return t.i>0&&t.i>t.g?`Ahorro<br><b>${Math.round((t.i-t.g)/t.i*100)}%</b>`:''}
+function openLibre(){const lb=libre(),r=lb.r;const pag=r.tarj+r.prest+r.fijos;
+  dlg(`<h3>💰 Libre para gastar</h3><table class="t"><tr><td>Lo que tenés hoy (efectivo, bancos y billeteras)</td><td class="n">${fmt(r.ini)}</td></tr><tr><td>+ Lo que falta cobrar este mes</td><td class="n pos">${fmt(r.ing)}</td></tr><tr><td>− Lo que vence este mes</td><td class="n neg">${fmt(pag)}</td></tr>${r.atras>0.5?`<tr><td>− Lo atrasado</td><td class="n neg">${fmt(r.atras)}</td></tr>`:''}
+   <tr><td><b>Libre hasta fin de mes</b></td><td class="n ${lb.L<0?'neg':'pos'}"><b>${fmt(lb.L)}</b></td></tr><tr><td>Días que quedan</td><td class="n">${lb.dias}</td></tr><tr><td><b>Por día</b></td><td class="n"><b>${fmt(Math.max(0,lb.dia))}</b></td></tr></table>
+   <p class="small">Lo que compres con tarjeta de crédito lo pagás con el resumen del mes que viene.</p><div class="actions"><button class="btn sec" onclick="dlgClose();go('flujo')">Ver cashflow</button><button class="btn" onclick="dlgClose()">Entendido</button></div>`)}
+
 /* ============ Vista: Inicio ============ */
 function vInicio(){
-  const t=totales(MES_ACT);const ef=efectivoMes(MES_ACT);const sal=saldos();const cb=catBreak(MES_ACT);
-  const tarjetas=S.metodos.filter(m=>m.tipo==='credito');const da=deudaAcum(MES_ACT);const ag=da.ag;const mesN=MESL[+MES_ACT.slice(5)-1];
-  let h=`<div class="kpis" data-h="kpis">
-   <div class="kpi"><div class="l">⬆️ Ingresos</div><div class="v pos">${fmt(t.i)}</div><div class="s">${mesN}</div></div>
-   <div class="kpi"><div class="l">⬇️ Gastos</div><div class="v neg">${fmt(t.g)}</div><div class="s">${t.i?Math.round(t.g/t.i*100)+'% de ingresos':'—'}</div></div>
-   <div class="kpi"><div class="l">⚖️ Resultado</div><div class="v ${t.i-t.g>=0?'pos':'neg'}">${fmt(t.i-t.g)}</div><div class="s">${t.i?'Ahorro '+Math.round((t.i-t.g)/t.i*100)+'%':''}</div></div>
-   <div class="kpi" onclick="CONC_TAB='efe';go('conc')" style="cursor:pointer"><div class="l">💵 Efectivo sin registrar</div><div class="v ${ef.dif>1?'neg':''}">${fmt(Math.max(0,ef.dif))}</div><div class="s">Retirado ${fmt(ef.ret)}</div></div>
-  </div>`;
-  const pend=ag.items.filter(i=>i.estado!=='pagado').slice(0,3);
-  h+=`<div class="card" onclick="go('agenda')" style="cursor:pointer"><h2 data-h="compromisos">📌 Compromisos de ${mesN}${hi('compromisos')}<span class="sp"></span><span class="small">${ag.pagados}/${ag.items.length} pagados</span></h2>
-   <div class="row" style="justify-content:space-between"><div><div class="small">Pendiente acumulado</div><b style="font-size:19px" class="${da.total>0.5?'neg':'pos'}">${fmt(da.total)}</b>${da.atras>0.5?`<div class="small neg">incluye ${fmt(da.atras)} de meses anteriores</div>`:''}</div><div style="text-align:right"><div class="small">Comprometido</div><b>${fmt(ag.total)}</b></div></div>
-   <div class="bar mt"><i style="width:${ag.total?Math.min(100,ag.pag/ag.total*100):0}%;background:var(--good)"></i></div>
-   ${pend.length?`<div class="list mt">${pend.map(itemAgenda).join('')}</div>`:''}</div>`;
-  {const cf=cashflow(6);const mn=cf.reduce((a,r)=>r.fin<a.fin?r:a,cf[0]);
-   h+=`<div class="card" onclick="go('flujo')" style="cursor:pointer"><h2 data-h="cashflow">💧 Cashflow proyectado${hi('cashflow')}<span class="sp"></span><span class="small">6 meses ›</span></h2>
-   <div class="row" style="justify-content:space-between;gap:8px"><div><div class="small">Liquidez hoy</div><b>${fmt(cf[0].ini)}</b></div><div style="text-align:center"><div class="small">Fin de ${MES[+cf[0].ym.slice(5)-1].toLowerCase()}</div><b class="${cf[0].fin<0?'neg':''}">${fmt(cf[0].fin)}</b></div><div style="text-align:right"><div class="small">Mínimo (${lblMes(mn.ym)})</div><b class="${mn.fin<0?'neg':'pos'}">${fmt(mn.fin)}</b></div></div>
-   ${lineChart(cf.map(r=>lblMes(r.ym)),cf.map(r=>r.fin),{h:120,label:'Saldo proyectado'})}
-   ${S.ingProy.length?'':'<div class="small">Cargá tus ingresos proyectados en Agenda para que el cashflow sea real.</div>'}</div>`}
-  h+=`<div class="card"><h2 data-h="tarjetas">💳 Próximos vencimientos${hi('tarjetas')}<span class="sp"></span><button class="btn sm ghost" onclick="go('ajustes')">Editar</button></h2>`;
-  if(!tarjetas.length)h+=`<div class="empty">Agregá tus tarjetas en Ajustes.</div>`;
-  tarjetas.forEach(m=>{const r=proximosResumenes(m,1)[0];const cur=ciclo(m,today(),0);const dias=r?dayDiff(r.venc,today()):null;
-    let split='';if(r&&(m.adicionales||[]).length){const g={};r.items.forEach(c=>g[c.pl||'']=(g[c.pl||'']||0)+c.importe);split=['',...m.adicionales].filter(p=>g[p]).map(p=>esc(plLbl(m,p))+' '+fmt(g[p])).join(' · ')}
-    h+=`<div class="cc" style="background:${CARD_BG[m.estilo]||CARD_BG.def}" onclick="openTarjeta('${m.id}')">
-      <div class="n">${esc(m.nombre)}</div><div class="s">Cierre actual ${fdia(cur.cierre)} · vence ${fdia(cur.venc)}</div>
-      <div class="v">${r?fmtAU(r.ars,r.usd):fmt(0)}</div><div class="s">${esAdic(m)?'🔗 Adicional · el resumen lo paga '+esc(m.compartida.titular)+' · ':''}${r?'Vence '+fdia(r.venc)+' · '+r.items.length+' consumos/cuotas'+(r.items.some(c=>c.est)?' (incluye estimados)':''):'Sin consumos pendientes'}</div>
-      ${split?`<div class="s" style="margin-top:4px">💳 ${split}</div>`:''}
-      ${r?`<span class="bdg">${dias<=0?'¡Hoy!':dias===1?'Mañana':'en '+dias+' días'}</span>`:''}</div>`});
-  h+=`</div>`;
-  h+=`<div class="card"><h2 data-h="categorias">🧩 Gastos por categoría${hi('categorias')}</h2>${cb.length?`<div class="donutwrap"><div>${donut(cb)}</div>${legend(cb)}</div>`:`<div class="empty"><div class="e">🌱</div>Todavía no hay gastos en ${mesN}.<br>Tocá <b>+</b> para cargar el primero.</div>`}</div>`;
-  const cuentas=S.metodos.filter(m=>m.tipo!=='debito');
-  h+=`<div class="card"><h2 data-h="cuentas">🏦 Mis cuentas y deudas${hi('cuentas')}</h2><div class="list">${cuentas.map(m=>{const cr=m.tipo==='credito';const v=sal[m.id],u=sal._usd[m.id]||0;
-     return`<div class="it" onclick="${cr?`openTarjeta('${m.id}')`:`openMetodo('${m.id}')`}"><div class="ico">${icoMet(m)}</div><div class="tx"><div class="t1">${esc(m.nombre)}</div><div class="t2">${TIPOS_MET[m.tipo]}${m.moneda===M2()?' · USD':''}</div></div><div class="am ${cr?((v>0||u>0)?'neg':''):(v<0?'neg':'')}">${cr?fmtAU(v,u):fmt(v,m.moneda)}<small>${cr?(esAdic(m)?'tus consumos · paga '+esc(m.compartida.titular):'deuda total'):'saldo'}</small></div></div>`}).join('')}
-   ${S.prestamos.map(p=>{const e=estadoPrestamo(p);return`<div class="it" onclick="openPrest('${p.id}')"><div class="ico">🏛️</div><div class="tx"><div class="t1">${esc(p.nombre)}</div><div class="t2">Préstamo · ${e.rest} cuotas restantes</div></div><div class="am neg">${fmt(e.cap!==null?e.cap:e.nominal,p.moneda)}<small>${e.cap!==null?'capital pendiente':'cuotas restantes'}</small></div></div>`}).join('')}</div>
-   <div class="small mt">Saldos desde el "saldo inicial" de cada cuenta (Ajustes). La deuda de tarjeta incluye cuotas futuras.</div></div>`;
-  const ult=[...S.movs].filter(m=>!m.ancla).sort(ordMov).slice(0,6);
-  h+=`<div class="card"><h2 data-h="ultimos">🕒 Últimos movimientos${hi('ultimos')}<span class="sp"></span><button class="btn sm ghost" onclick="go('movs')">Ver todos</button></h2>${ult.length?`<div class="list">${ult.map(itemMov).join('')}</div>`:`<div class="empty">Sin movimientos.</div>`}</div>`;
-  const tip=sugerencias()[0];
-  if(tip)h+=`<div class="sug ${tip.n}" onclick="go('anal')" style="cursor:pointer"><span class="e">${tip.e}</span><div><b>${esc(tip.t)}</b><p>${tip.p}</p></div></div>`;
+  const ym=MES_ACT,mesN=MESL[+ym.slice(5)-1],t=totales(ym),res=t.i-t.g;
+  const ven=vencidos(),pv=porVencer(12),gc=topCats(gastosCat([ym]),7),cu=cuentasRes(ven),lb=libre();
+  const gtot=gc.reduce((a,d)=>a+d.v,0);const pv0=pv.meses[0].tot,pv1=pv.meses[1]?pv.meses[1].tot:0,pv2=Math.max(0,pv.total-pv0-pv1);
+  const pc=v=>pv.total?(v/pv.total*100).toFixed(1):0;const nom=(S.cloud&&S.cloud.nombre)||'';
+  let h=`<div class="home"><div class="hero hhome">${nom?`<div class="hl">Hola, ${esc(nom)}</div>`:''}</div><div class="ovl">
+  <div class="spot" data-h="spRes" onclick="go('dres')"><div class="sl"><span>⚖️ Resultado del mes</span><span class="ch">›</span></div>
+   <div class="row" style="justify-content:space-between;align-items:flex-end;gap:8px"><div style="min-width:0"><div class="sv big amt ${res>=0?'pos':'neg'}">${sg(res)}</div><div class="ss">Ingresos <span class="amt">${fmtC(t.i)}</span> · Gastos <span class="amt">${fmtC(t.g)}</span></div></div>${spark(Array.from({length:6},(_,i)=>{const x=totales(ymAdd(ym,i-5));return x.i-x.g}),84,34)}</div>
+   <div class="chips3">${['t','s','a'].map(k=>{const v=resPer(k).r;return`<span>${PERC[k]} <b class="amt ${v>=0?'pos':'neg'}">${v>0.5?'+':''}${fmtC(v)}</b></span>`}).join('')}</div></div>
+  <div class="g22">
+   <div class="spot ${ven.total>0.5?'alert':''}" data-h="spVen" onclick="go('dven')"><div class="sl"><span>${ven.total>0.5?'🔴':'✅'} Vencido</span><span class="ch">›</span></div>
+    ${ven.total>0.5?`<div><div class="sv neg amt">${fmt(ven.total)}</div><div class="ss">${ven.items.length} ${ven.items.length===1?'deuda':'deudas'} · desde ${MES[+ven.items[0].fecha.slice(5,7)-1]}</div>${[...new Set(ven.items.map(i=>i.nombre))].slice(0,2).map(n=>`<div class="ss ss2">· ${esc(n)}</div>`).join('')}</div>`:`<div><div class="sv pos">Al día</div><div class="ss">Sin deudas vencidas</div></div>`}</div>
+   <div class="spot" data-h="spPv" onclick="go('dpv')"><div class="sl"><span>📅 Por vencer</span><span class="ch">›</span></div>
+    <div><div class="sv amt">${fmt(pv.total)}</div><div class="sbar"><i style="width:${pc(pv0)}%;background:var(--s4)"></i><i style="width:${pc(pv1)}%;background:var(--s4);opacity:.6"></i><i style="width:${pc(pv2)}%;background:var(--s4);opacity:.3"></i></div>
+    <div class="ss">Este mes <span class="amt">${fmtC(pv0)}</span></div><div class="ss">Próximo mes <span class="amt">${fmtC(pv1)}</span></div><div class="ss">Después <span class="amt">${fmtC(pv2)}</span></div></div></div>
+   <div class="spot" data-h="spGas" onclick="PER='m';go('dgas')"><div class="sl"><span>🧩 Gastos</span><span class="amt" style="font-weight:700;color:var(--ink)">${fmtC(gtot)}</span></div>
+    ${gc.length?`<div class="gdn">${donut2(gc,60)}<div class="lgm">${gc.slice(0,3).map(d=>`<div><i style="background:${d.c}"></i>${esc(d.l)} <b>${Math.round(d.v/gtot*100)}%</b></div>`).join('')}${gc.length>3?`<div class="ss">+${gc.length-3+(gc[gc.length-1].n?gc[gc.length-1].n-1:0)} rubros</div>`:''}</div></div>`:`<div class="ss" style="white-space:normal">Todavía no hay gastos este mes. Tocá <b>+</b> para cargar el primero.</div>`}</div>
+   <div class="spot" data-h="spCta" onclick="go('dcta')"><div class="sl"><span>🏦 Cuentas</span><span class="ch">›</span></div>
+    <div class="ctl"><div><span>Efectivo</span><b class="amt">${fmtC(cu.E)}</b></div><div><span>Bancos</span><b class="amt">${fmtC(cu.B+cu.W)}</b></div><div><span>Tarjetas</span><b class="amt ${cu.T>0.5?'neg':''}">${cu.T>0.5?'−':''}${fmtC(Math.abs(cu.T))}</b></div><div><span>Compromisos</span><b class="amt ${cu.comp>0.5?'neg':''}">${cu.comp>0.5?'−':''}${fmtC(cu.comp)}</b></div></div></div>
+  </div>
+  <div class="spot libre ${lb.L<0?'mal':''}" data-h="spLibre" onclick="openLibre()"><span class="li">${lb.L<0?'⚠️':'💰'}</span><div style="flex:1;min-width:0">${lb.L<0?`<div class="sl">Este mes no alcanza</div><div class="sv amt">Faltan ${fmt(-lb.L)}</div>`:`<div class="sl">Libre para gastar · ${lb.dias} ${lb.dias===1?'día':'días'}</div><div class="sv amt">${fmt(lb.dia)} por día</div>`}</div><div class="ins">${lb.L<0?'Ver detalle ›':insight()}</div></div>
+  </div></div>`;
   return h;
 }
+
+/* ============ Detalle: Resultado ============ */
+function vRes(){const yms=perYms(PER);const R=resPer(PER);const ah=R.i>0?Math.round(R.r/R.i*100):null;
+  const chM=yms.length>=6?yms.slice(-12):Array.from({length:6},(_,i)=>ymAdd(MES_ACT,i-5));const tt=chM.map(totales);
+  const cf=cashflow(6);const neg=cf.find(r=>r.fin<0);
+  const ingC={};yms.forEach(y=>movsMes(y).filter(x=>x.tipo==='ingreso').forEach(x=>ingC[x.cat]=(ingC[x.cat]||0)+ars(x)));const ic=Object.entries(ingC).sort((a,b)=>b[1]-a[1]);
+  let h=`<div class="hero">${perSeg()}<div class="hl mt">${perTxt(PER)}</div><div class="hv amt">${sg(R.r)}</div><div class="hs">Ingresos <span class="amt">${fmt(R.i)}</span> · Gastos <span class="amt">${fmt(R.g)}</span>${ah!==null?' · ahorro '+ah+'%':''}</div></div><div class="ovl">
+  <div class="card"><h2>📊 Ingresos y gastos</h2>${bars(chM.map(lblMes),[{n:'Ingresos',vals:tt.map(x=>x.i),c:'var(--s3)'},{n:'Gastos',vals:tt.map(x=>x.g),c:'var(--s2)'}],{h:150,label:'Ingresos y gastos'})}</div>
+  <div class="card" onclick="go('flujo')" style="cursor:pointer"><h2>💧 Cashflow proyectado<span class="sp"></span><span class="small">6 meses ›</span></h2>
+   <div class="row" style="justify-content:space-between"><div><div class="small">Liquidez hoy</div><b class="amt">${fmt(cf[0].ini)}</b></div><div style="text-align:right"><div class="small">Fin de ${lblMes(cf[5].ym)}</div><b class="amt ${cf[5].fin<0?'neg':'pos'}">${fmt(cf[5].fin)}</b></div></div>
+   ${lineChart(cf.map(r=>lblMes(r.ym)),cf.map(r=>r.fin),{h:120,label:'Saldo proyectado'})}
+   ${neg?`<div class="small neg">⚠️ ${MESL[+neg.ym.slice(5)-1]} cierra en negativo: <span class="amt">${fmt(neg.fin)}</span></div>`:'<div class="small pos">✅ Sin faltantes en los próximos 6 meses</div>'}</div>
+  <div class="card"><h2>💰 Ingresos</h2><div class="list">${ic.length?ic.map(([k,v])=>`<div class="it" style="cursor:default"><div class="ico" style="background:var(--goodSoft)">${cat(k).e}</div><div class="tx"><div class="t1">${esc(cat(k).nombre)}</div></div><div class="am pos">${fmt(v)}</div></div>`).join(''):'<div class="empty">Sin ingresos registrados.</div>'}
+   <div class="it" onclick="go('dgas')"><div class="ico" style="background:var(--badSoft)">🧩</div><div class="tx"><div class="t1">Gastos</div><div class="t2">Ver por rubro ›</div></div><div class="am neg">− ${fmt(R.g)}</div></div></div></div>`;
+  if(yms.length>1)h+=`<div class="card"><h2>🗓️ Mes por mes</h2><table class="t"><tr><th>Mes</th><th style="text-align:right">Ingresos</th><th style="text-align:right">Gastos</th><th style="text-align:right">Resultado</th></tr>${yms.slice().reverse().map(y=>{const x=totales(y);return`<tr onclick="MES_ACT='${y}';PER='m';render()" style="cursor:pointer"><td><b>${lblMes(y)}</b></td><td class="n">${fmtK(x.i)}</td><td class="n">${fmtK(x.g)}</td><td class="n ${x.i-x.g<0?'neg':'pos'}"><b>${fmtK(x.i-x.g)}</b></td></tr>`}).join('')}</table></div>`;
+  h+=`<button class="btn sec full mb" onclick="go('agenda')">📌 Ingresos proyectados, gastos fijos y préstamos</button></div>`;
+  return h}
+
+/* ============ Detalle: Vencido ============ */
+function pickMesImpago(){const y0=today().slice(0,7);dlg(`<h3>¿De qué mes es la deuda?</h3><div class="hscroll" style="flex-wrap:wrap">${Array.from({length:12},(_,i)=>ymAdd(y0,-i)).map(y=>`<button class="pill" onclick="dlgClose();setTimeout(()=>openImpago('${y}'),50)">${lblMes(y)}</button>`).join('')}</div><div class="actions"><button class="btn sec" onclick="dlgClose()">Cerrar</button></div>`)}
+function rowPago(i,cls){const pp=i.monto>0.5&&i.pagadoMonto>0.5;return`<div class="it" onclick="${i.act}"><div class="ico">${i.e}</div><div class="tx"><div class="t1">${esc(i.nombre)}</div><div class="t2">${fdia(i.fecha)}${i.mes&&i.mes.slice(0,4)!==today().slice(0,4)?' '+i.mes.slice(0,4):''} · ${esc(i.sub||'')}</div>${pp?`<div class="bar" style="margin-top:5px"><i style="width:${Math.min(100,i.pagadoMonto/i.monto*100)}%;background:var(--s4)"></i></div>`:''}</div><div class="am ${cls||''}">${fmt(i.resta)}<div style="margin-top:3px"><button class="btn sm ${cls==='neg'?'danger':'sec'}" onclick="event.stopPropagation();${i.act}">${pp?'Pagar resto':'Pagar'}</button></div></div></div>`}
+function vVen(){const V=vencidos();const g={};V.items.forEach(i=>{const k=i.k+'|'+i.nombre;(g[k]=g[k]||{n:i.nombre,e:i.e,its:[],t:0}).its.push(i);g[k].t+=i.resta});const gs=Object.values(g).sort((a,b)=>b.t-a.t);
+  let h=`<div class="hero">${V.total>0.5?`<div class="hl">Deudas vencidas sin pagar</div><div class="hv amt">${fmt(V.total)}</div><div class="hs">${V.items.length} ${V.items.length===1?'compromiso impago':'compromisos impagos'}</div>`:`<div class="hl">Deudas vencidas</div><div class="hv">✅ Estás al día</div><div class="hs">No tenés pagos atrasados</div>`}</div><div class="ovl">`;
+  gs.forEach(G=>{const meses=[...new Set(G.its.map(i=>i.mes))];h+=`<div class="card">${G.its.length>1?`<div class="row" style="justify-content:space-between;margin-bottom:4px"><div><b>${G.e} ${esc(G.n)}</b><div class="small">Adeudado desde ${MESL[+G.its[0].fecha.slice(5,7)-1]} · ${meses.length} ${meses.length===1?'mes':'meses'}</div></div><b class="neg amt">${fmt(G.t)}</b></div>`:''}<div class="list">${G.its.map(i=>rowPago(i,'neg')).join('')}</div></div>`});
+  if(V.total>0.5)h+=`<div class="small mb" style="padding:0 4px">Tocá <b>Pagar</b> y cambiá el importe si pagás solo una parte: el resto sigue pendiente.</div>`;
+  h+=`<div class="two mb"><button class="btn sec" onclick="pickMesImpago()">+ Deuda olvidada</button><button class="btn sec" onclick="go('agenda')">📌 Agenda completa</button></div></div>`;
+  return h}
+
+/* ============ Detalle: Por vencer ============ */
+function vPv(){const P=porVencer(12);const mx=Math.max(1,...P.meses.map(m=>m.tot));const W=330,H=70,bw=W/12-6;
+  let svg=`<svg viewBox="0 0 ${W} ${H+16}" width="100%" role="img" aria-label="Vencimientos por mes">${P.meses.map((m,i)=>{const hh=Math.max(m.tot>0?3:0,(H-4)*m.tot/mx);const x=i*(W/12)+3;return`<rect x="${x}" y="${H-hh}" width="${bw}" height="${hh}" rx="3" fill="var(--s4)" opacity="${i===0?1:i===1?.75:.45}" data-tip="${esc(lblMes(m.ym))}: ${fmt(m.tot)}"/><text x="${x+bw/2}" y="${H+12}" text-anchor="middle" font-size="9.5" fill="var(--ink2)">${MES[+m.ym.slice(5)-1]}</text>`}).join('')}</svg>`;
+  let h=`<div class="hero"><div class="hl">Total a pagar · próximos 12 meses</div><div class="hv amt">${fmt(P.total)}</div><div class="hs">Este mes <span class="amt">${fmt(P.meses[0].tot)}</span> · próximo <span class="amt">${fmt(P.meses[1].tot)}</span></div></div><div class="ovl"><div class="card">${svg}</div>`;
+  const con=P.meses.filter(m=>m.items.length);if(!con.length)h+=`<div class="card empty"><div class="e">🎉</div>No tenés vencimientos próximos.</div>`;
+  con.forEach((m,i)=>{const body=`<div class="list">${m.items.map(x=>rowPago(x)).join('')}</div>`;const tl=`${MESL[+m.ym.slice(5)-1]} ${m.ym.slice(0,4)} · <span class="amt">${fmt(m.tot)}</span>`;
+    h+=i<2?`<div class="lbl">${tl}</div><div class="card">${body}</div>`:`<details class="card"><summary>${tl}</summary>${body}</details>`});
+  h+=`<div class="small mb" style="padding:0 4px">Tarjetas y préstamos: los próximos 12 meses. Gastos fijos: este mes y el próximo.</div><button class="btn sec full mb" onclick="go('agenda')">📌 Agenda completa</button></div>`;
+  return h}
+
+/* ============ Detalle: Gastos ============ */
+function vGas(){const yms=perYms(PER);const gc=gastosCat(yms);const tot=gc.reduce((a,d)=>a+d.v,0),est=gc.reduce((a,d)=>a+d.e,0);
+  const prev=PER==='tot'?null:gastosCat(yms.map(y=>ymAdd(y,-yms.length)));const mx=gc[0]?gc[0].v:1;const tc7=topCats(gc,7);
+  let h=`<div class="hero">${perSeg()}<div class="hl mt">${perTxt(PER)}</div><div class="hv amt">${fmt(tot)}</div><div class="hs">${est>0.5?'incluye <span class="amt">'+fmt(est)+'</span> estimados sin confirmar':'todo confirmado'}</div></div><div class="ovl">`;
+  if(!gc.length)return h+`<div class="card empty"><div class="e">🌱</div>No hay gastos en este período.</div></div>`;
+  h+=`<div class="card"><div class="donutwrap">${donut2(tc7,130,`<text x="65" y="61" text-anchor="middle" font-size="11" fill="var(--muted)">Total</text><text x="65" y="79" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" class="amt">${fmtK(tot)}</text>`)}${legend(tc7)}</div></div>
+  <div class="card"><h2>🧩 Todos los rubros</h2>${gc.map(d=>{const o=prev&&prev.find(x=>x.id===d.id);const p=o&&o.v>0.5?Math.round((d.v/o.v-1)*100):null;
+    const chip=!prev?'':p===null?'<span class="cmp">nuevo</span>':p>2?`<span class="cmp neg">+${p}%</span>`:p<-2?`<span class="cmp pos">${p}%</span>`:'<span class="cmp">=</span>';const c=COLORS[Math.min(7,tc7.findIndex(x=>x.id===d.id)<0?6:tc7.findIndex(x=>x.id===d.id))];
+    return`<div class="rub"><div class="row" style="justify-content:space-between;gap:8px"><span class="nm">${cat(d.id).e} ${esc(cat(d.id).nombre)}</span><span style="white-space:nowrap"><b class="amt">${fmt(d.v)}</b> ${chip}</span></div><div class="rbar"><i style="width:${d.r/mx*100}%;background:${c}"></i><i style="width:${d.e/mx*100}%;background:${c};opacity:.38"></i></div></div>`}).join('')}
+   <div class="small mt">${est>0.5?'<span>Tramo claro = estimado sin confirmar (gastos fijos y cuotas que todavía no registraste).</span> ':''}${prev?'<span>Comparado con el período anterior.</span>':''}</div></div>`;
+  {const ms=Array.from({length:6},(_,i)=>ymAdd(MES_ACT,i-5));const ids=gc.slice(0,5).map(d=>d.id);const per=ms.map(y=>gastosCat([y],1));
+   h+=`<div class="card"><h2>📈 Últimos 6 meses</h2>${stackBars(ms.map(lblMes),[...ids.map((id,i)=>({n:cat(id).nombre,vals:per.map(a=>(a.find(x=>x.id===id)||{r:0}).r),c:COLORS[i]})),{n:'Resto',vals:per.map(a=>a.filter(x=>!ids.includes(x.id)).reduce((s,x)=>s+x.r,0)),c:'var(--s8)'}],{h:160,label:'Gastos por mes'})}</div>`}
+  const tip=sugerencias()[0];if(tip)h+=`<div class="sug ${tip.n}"><span class="e">${tip.e}</span><div><b>${esc(tip.t)}</b><p>${tip.p}</p></div></div>`;
+  h+=`<button class="btn sec full mb" onclick="go('anal')">📊 Análisis y propuestas de ahorro</button></div>`;
+  return h}
+
+/* ============ Detalle: Cuentas ============ */
+function vCta(){const ven=vencidos();const C=cuentasRes(ven);const ef=efectivoMes(today().slice(0,7));
+  const fila=(m,sub)=>{const val=C.s[m.id]||0;return`<div class="it" onclick="openMetodo('${m.id}')"><div class="ico">${icoMet(m)}</div><div class="tx"><div class="t1">${esc(m.nombre)}</div>${sub?`<div class="t2">${sub}</div>`:''}</div><div class="am ${val<0?'neg':''}">${fmt(val,m.moneda)}${(m.moneda||M1())!==M1()?`<small>${fmt(C.v(m))}</small>`:''}</div></div>`};
+  let h=`<div class="hero"><div class="hl">Patrimonio neto</div><div class="hv amt">${fmt(C.neto)}</div><div class="hs">Tenés <span class="amt">${fmt(C.disp)}</span> · Debés <span class="amt">${fmt(C.T+C.comp)}</span></div>${C.comp>0.5?`<div class="hs">Sin contar compromisos: <span class="amt">${fmt(C.netoSC)}</span></div>`:''}</div><div class="ovl">`;
+  h+=`<div class="lbl">Disponible · <span class="amt">${fmt(C.disp)}</span></div><div class="card"><div class="list">${[...C.efe.map(m=>fila(m,ef.dif>1?`<span class="neg">${fmt(ef.dif)} sin registrar este mes</span>`:'')),...C.ban.map(m=>fila(m,TIPOS_MET[m.tipo])),...C.bil.map(m=>fila(m,TIPOS_MET[m.tipo]))].join('')||'<div class="empty">Agregá tus cuentas en Ajustes.</div>'}</div></div>`;
+  h+=`<div class="lbl">Tarjetas · <span class="amt">${fmt(C.T)}</span></div><div class="card"><div class="list">${C.tj.map(m=>{const r=proximosResumenes(m,1)[0];let split='';if(r&&(m.adicionales||[]).length){const g={};r.items.forEach(c=>g[c.pl||'']=(g[c.pl||'']||0)+c.importe);split=['',...m.adicionales].filter(p=>g[p]).map(p=>esc(plLbl(m,p))+' '+fmtC(g[p])).join(' · ')}
+     const d=C.deu(m);return`<div class="it" onclick="openTarjeta('${m.id}')"><div class="ico">💳</div><div class="tx"><div class="t1">${esc(m.nombre)}</div><div class="t2">${r?'Próximo resumen '+fmtC(r.total)+' · vence '+fdia(r.venc):'Sin consumos pendientes'}</div>${split?`<div class="t2">${split}</div>`:''}</div><div class="am ${d>0.5?'neg':''}">${d>0.5?'− ':''}${fmt(Math.abs(d))}<small>deuda total</small></div></div>`}).join('')||'<div class="empty">Sin tarjetas de crédito.</div>'}</div><div class="small mt">La deuda total incluye las cuotas futuras.</div></div>`;
+  const adic=S.metodos.filter(esAdic);if(adic.length)h+=`<div class="lbl">Tarjetas que te comparten</div><div class="card"><div class="list">${adic.map(m=>{const v=C.s[m.id]||0;return`<div class="it" onclick="openTarjeta('${m.id}')"><div class="ico">🔗</div><div class="tx"><div class="t1">${esc(m.nombre)}</div><div class="t2">El resumen lo paga ${esc(m.compartida.titular)}</div></div><div class="am">${fmt(v)}<small>tus consumos</small></div></div>`}).join('')}</div></div>`;
+  h+=`<div class="lbl">Compromisos · <span class="amt">${fmt(C.comp)}</span></div><div class="card"><div class="list">${C.pr.map(x=>`<div class="it" onclick="openPrest('${x.p.id}')"><div class="ico">🏛️</div><div class="tx"><div class="t1">${esc(x.p.nombre)}</div><div class="t2">${x.e.rest} cuotas restantes · cuota ${fmt(x.p.cuota,x.p.moneda)}</div></div><div class="am neg">− ${fmt(x.v)}<small>${x.e.cap!==null?'capital pendiente':'resta pagar'}</small></div></div>`).join('')}
+   ${C.V>0.5?`<div class="it" onclick="go('dven')"><div class="ico">🔴</div><div class="tx"><div class="t1">Deudas vencidas</div><div class="t2">${C.vc.length} gastos fijos o pagos atrasados ›</div></div><div class="am neg">− ${fmt(C.V)}</div></div>`:''}
+   ${C.comp>0.5?'':'<div class="empty">Sin compromisos 🎉</div>'}</div></div>
+  <div class="two mb"><button class="btn sec" onclick="go('conc')">🔗 Conciliar</button><button class="btn sec" onclick="CONC_TAB='efe';go('conc')">🧮 Arqueo</button></div><button class="btn ghost full mb" onclick="go('ajustes')">⚙️ Editar cuentas y tarjetas</button></div>`;
+  return h}
+
+/* ============ Privacidad y altura del inicio ============ */
+function applyPriv(){document.body.classList.toggle('priv',!!S.cfg.priv);const b=$('#eyeBtn');if(b){b.textContent=S.cfg.priv?'🙈':'👁';b.setAttribute('aria-label',S.cfg.priv?'Mostrar importes':'Ocultar importes')}}
+function togPriv(){S.cfg.priv=!S.cfg.priv;save();applyPriv();toast(S.cfg.priv?'Importes ocultos':'Importes visibles')}
+function fitHome(){const hd=$('header.top');if(!hd)return;const pb=parseFloat(getComputedStyle(document.body).paddingBottom)||0;document.documentElement.style.setProperty('--avail',Math.max(420,innerHeight-hd.offsetHeight-pb-28)+'px')}
+window.addEventListener('resize',fitHome);
+
 const fdia=s=>{const d=parseYmd(s);return EN()?MES[d.getMonth()]+' '+d.getDate():d.getDate()+' '+MES[d.getMonth()]};
 const icoMet=m=>({credito:'💳',debito:'💳',cuenta:'🏦',billetera:'📱',efectivo:'💵'}[m.tipo]);
 const ordMov=(a,b)=>(b.fecha+(b.hora||''))>(a.fecha+(a.hora||''))?1:-1;
@@ -880,7 +1042,7 @@ function vMovs(){
   let ms=movsMes(MES_ACT).filter(m=>(!FIL.tipo||m.tipo===FIL.tipo)&&(!FIL.met||[m.metodo,m.origen,m.destino].includes(FIL.met)));
   if(FIL.q){const q=FIL.q.toLowerCase();ms=ms.filter(m=>(m.desc||'').toLowerCase().includes(q)||cat(m.cat).nombre.toLowerCase().includes(q))}
   ms.sort(ordMov);
-  let h=`<input class="in mb" data-h="buscar" placeholder="🔎 Buscar…" value="${esc(FIL.q)}" oninput="FIL.q=this.value;clearTimeout(window._q);window._q=setTimeout(()=>{render();const i=document.querySelector('main input');i.focus();i.setSelectionRange(i.value.length,i.value.length)},350)">
+  let h=`<div class="two mb"><button class="btn sec sm" onclick="go('agenda')">📌 Agenda</button><button class="btn sec sm" onclick="go('conc')">🔗 Conciliar</button></div><input class="in mb" data-h="buscar" placeholder="🔎 Buscar…" value="${esc(FIL.q)}" oninput="FIL.q=this.value;clearTimeout(window._q);window._q=setTimeout(()=>{render();const i=document.querySelector('main input');i.focus();i.setSelectionRange(i.value.length,i.value.length)},350)">
   <div class="hscroll mb" data-h="filtros">${[['','Todos'],['gasto','Gastos'],['ingreso','Ingresos'],['transf','Transferencias']].map(([k,l])=>`<button class="pill ${FIL.tipo===k?'on':''}" onclick="FIL.tipo='${k}';render()">${l}</button>`).join('')}</div>
   <div class="hscroll mb"><button class="pill ${!FIL.met?'on':''}" onclick="FIL.met='';render()">Todas las vías</button>${S.metodos.map(m=>`<button class="pill ${FIL.met===m.id?'on':''}" onclick="FIL.met='${m.id}';render()">${icoMet(m)} ${esc(m.nombre)}</button>`).join('')}</div>`;
   if(!ms.length)return h+`<div class="card empty"><div class="e">📭</div>No hay movimientos con ese filtro en ${MESL[+MES_ACT.slice(5)-1]}.</div>`;
@@ -1239,7 +1401,7 @@ function vAjustes(){
   <div class="card"><h2 data-h="compartidas">☁️ Tarjetas compartidas${hi('compartidas')}</h2><p class="small" style="margin-top:0">Para titulares con adicionales: los gastos del adicional te llegan al instante, con aviso en el teléfono.</p>
    <button class="btn full" onclick="openCuenta()">${cloudOK()?(CL().nombre?'☁️ Mi cuenta compartida':'Crear cuenta / ingresar'):'Configurar'}</button></div>
   <div class="card"><h2>❓ Ayuda</h2><p class="small" style="margin-top:0">Tutorial, guía de cada pantalla y glosario de palabras financieras.</p><button class="btn full" onclick="openAyuda()">Abrir ayuda</button></div>
-  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v3.0.1 · ${S.movs.length} movimientos</div>`;
+  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v4.0 · ${S.movs.length} movimientos</div>`;
   return h;
 }
 let MF=null;
@@ -1598,6 +1760,7 @@ function finSetup(){const keep={theme:S.cfg.theme};S=defaults(SU.lang,SU.mon1||'
 /* ============ Ayuda: textos, tutorial, guías y glosario ============ */
 const hi=k=>`<button class="hi" onclick="event.stopPropagation();event.preventDefault();info('${k}')" aria-label="¿Qué es esto?">i</button>`;
 const HELP={
+ spRes:["⚖️ Resultado", "Lo que te quedó en el mes: <b>ingresos menos gastos</b>. Verde = ahorraste; rojo = gastaste más de lo que entró. Abajo, el mismo cálculo para el trimestre, el semestre y el año. Tocá para ver el detalle y el cashflow."],spVen:["🔴 Vencido", "Lo que ya tendrías que haber pagado y todavía no registraste: cuotas, servicios, colegio, resúmenes. Si dice <b>Al día</b>, no debés nada atrasado. Tocá para pagar o registrar cada uno."],spPv:["📅 Por vencer", "Lo que tenés que pagar de acá en adelante: resúmenes de tarjeta, cuotas de préstamos y gastos fijos de este mes y el próximo. La barra muestra cuánto vence este mes, el próximo y después."],spGas:["🧩 Gastos", "En qué se fue la plata este mes, por rubro. La parte más clara del gráfico es lo <b>estimado</b>: gastos fijos y cuotas que todavía no confirmaste. Tocá para comparar con otros meses."],spCta:["🏦 Cuentas", "Cuánto tenés (efectivo, bancos y billeteras) y cuánto debés (tarjetas y compromisos, como préstamos o deudas vencidas). Tocá para ver cada cuenta y tu patrimonio neto."],spLibre:["💰 Libre para gastar", "Cuánta plata podés gastar <b>por día</b> hasta fin de mes sin dejar de pagar nada: lo que tenés hoy, más lo que falta cobrar este mes, menos lo que vence este mes y lo atrasado. Tocá para ver la cuenta."],
  buscar:['🔎 Buscar','Escribí parte del nombre (por ejemplo "coto" o "nafta") y la lista muestra solo esos movimientos del mes.'],
  filtros:['🎛️ Filtros','Tocá <b>Gastos</b>, <b>Ingresos</b> o <b>Transferencias</b> para ver solo ese tipo. La fila de abajo filtra por tarjeta o cuenta. Para corregir o borrar un movimiento, tocalo.'],
  compartidas:['🔗 Tarjetas compartidas','Sirve si tenés <b>tarjetas adicionales</b> (por ejemplo, la de tu pareja).<br><br>1. El <b>titular</b> entra a la tarjeta (Ajustes → Vías de pago), toca <b>🔗 Vincular</b> al lado del adicional y le manda el código por WhatsApp.<br>2. El <b>adicional</b> instala la app, crea su cuenta e ingresa el código.<br><br>Desde ese momento, cada gasto que el adicional carga con esa tarjeta <b>le aparece al titular al instante</b>, con una notificación. El resto de los gastos de cada uno sigue siendo privado.'],
@@ -1645,7 +1808,7 @@ const HELP={
  cuotas:['🔢 Cuotas','Si pagaste en cuotas, elegí cuántas. La app divide el total y pone cada cuota en el resumen que corresponde, así sabés cuánto te queda por pagar cada mes.<br><br>Tip: comprar en cuotas sin interés conviene cuando hay inflación, pero sumar muchas cuotas compromete tus próximos meses.'],
  transf:['🔁 Extracción y transferencia','Mover plata entre tus cuentas <b>no es un gasto</b>: sigue siendo tuya.<br>• Sacar del cajero: de tu cuenta → Efectivo.<br>• Pagar la tarjeta: de tu cuenta → la tarjeta.<br><br>Anotarlo así evita contar el mismo gasto dos veces.']
 };
-const VIEWHELP={inicio:['🏠 Inicio','El resumen de tu mes: cuánto entró y salió, qué pagos tenés pendientes, cómo viene tu cashflow, tus tarjetas y tus cuentas.'],
+const VIEWHELP={inicio:['🏠 Inicio','Tu situación en una sola pantalla: resultado del mes, deudas vencidas, próximos vencimientos, gastos, cuentas y cuánto podés gastar por día. Tocá cualquier recuadro para ver el detalle.'],dres:["⚖️ Resultado", "Ingresos menos gastos del período que elijas (mes, trimestre, semestre, año o total), cómo viene tu cashflow y de dónde vino la plata."],dven:["🔴 Vencido", "Todo lo que ya venció y no registraste como pagado. Tocá <b>Pagar</b> en cada uno; si pagás una parte, cambiá el importe y el resto queda pendiente."],dpv:["📅 Por vencer", "Lo que vas a tener que pagar, mes por mes: tarjetas, préstamos y gastos fijos. Podés adelantar un pago tocándolo."],dgas:["🧩 Gastos", "Tus gastos por rubro, comparados con el período anterior. Lo más claro es estimado (todavía sin confirmar)."],dcta:["🏦 Cuentas", "Tu patrimonio: lo que tenés en efectivo, bancos y billeteras, menos lo que debés en tarjetas y compromisos."],
  movs:['📋 Movimientos','Todo lo que anotaste, día por día. Buscá por nombre, filtrá por tipo o por vía de pago y tocá cualquier renglón para corregirlo.'],
  agenda:['📌 Agenda','Tu calendario de plata: vencimientos (tarjetas, préstamos, gastos fijos) y cobros esperados del mes. Abajo cargás los gastos fijos, préstamos e ingresos que se repiten.'],
  flujo:['💧 Cashflow proyectado','Cuánta plata vas a tener a fin de cada mes, sumando lo que vas a cobrar y restando lo que vas a pagar.'],
@@ -1656,12 +1819,11 @@ const TOURS={
  nav:[['[data-h=fab]','➕ El botón más importante','Cada vez que <b>gastes, cobres o saques plata del cajero</b>, tocá acá y anotalo. Tarda 5 segundos.<br><br>El secreto: anotar <b>en el momento</b>, así no te olvidás.'],
   ['[data-v=inicio]','🏠 Inicio','El resumen de tu mes de un vistazo.'],
   ['[data-v=movs]','📋 Movimientos','La lista de todo lo que anotaste. Acá buscás y corregís.'],
-  ['[data-v=agenda]','📌 Agenda','Tus vencimientos y cobros: tarjetas, cuotas, colegio, servicios, sueldo. También el <b>cashflow</b>.'],
-  ['[data-v=conc]','🔗 Conciliar','Comparar lo que anotaste con el resumen del banco o la tarjeta, para encontrar olvidos o cobros raros.'],
   ['[data-v=anal]','📊 Análisis','Gráficos y consejos para gastar mejor.'],
   ['[data-h=gear]','⚙️ Ajustes','Tus tarjetas (días de cierre y vencimiento), cuentas, integrantes de la familia y respaldos. <b>Empezá por acá.</b>'],
+  ['[data-h=eye]','👁 Ocultar importes','Tapa todos los números con un toque, para mostrar la app sin que se vean tus montos.'],
   ['#helpBtn','❓ Ayuda','Tutorial completo, glosario de palabras y repetir estas guías cuando quieras.<br><br>Además, en cada sección hay un botón <b class="hi" style="display:inline-block">i</b> que explica para qué sirve.']],
- inicio:['kpis','compromisos','cashflow','tarjetas','categorias','cuentas'],
+ inicio:['spRes','spVen','spPv','spGas','spCta','spLibre'],
  movs:['buscar','filtros'],
  agenda:['agKpis','acum','venc','cobros','ingproy','fijos','prest','impPlan'],
  flujo:['flHor','ingEgr','saldoProy','detalle','supuestos'],
@@ -1676,6 +1838,7 @@ const TOURS={
   ['[data-h=fFecha]','6️⃣ Fecha y hora','Se completan solas con el momento actual. Cambialas si anotás algo de otro día. Después tocá <b>Guardar</b> y listo.']]
 };
 const HELP_EN={
+ spRes:["⚖️ Balance", "What you kept this month: <b>income minus expenses</b>. Green = you saved; red = you spent more than you earned. Below, the same for the quarter, six months and year. Tap for details and cash flow."],spVen:["🔴 Overdue", "What you should have paid already and haven't recorded: installments, utilities, school, statements. If it says <b>Up to date</b>, nothing is late. Tap to pay or record each one."],spPv:["📅 Coming due", "What you have to pay from now on: card statements, loan installments and recurring expenses for this month and next. The bar shows how much is due this month, next month and later."],spGas:["🧩 Expenses", "Where your money went this month, by category. The lighter part of the chart is <b>estimated</b>: recurring expenses and installments not confirmed yet. Tap to compare with other months."],spCta:["🏦 Accounts", "What you have (cash, banks and wallets) and what you owe (cards and commitments like loans or overdue debts). Tap to see each account and your net worth."],spLibre:["💰 Free to spend", "How much you can spend <b>per day</b> until month end without missing any payment: what you have today, plus income still to come, minus what's due this month and anything overdue. Tap to see the math."],
  buscar:['🔎 Search','Type part of a name (e.g. "walmart" or "gas") and the list shows only those transactions for the month.'],
  filtros:['🎛️ Filters','Tap <b>Expenses</b>, <b>Income</b> or <b>Transfers</b> to see only that type. The row below filters by card or account. To edit or delete a transaction, tap it.'],
  kpis:['📊 Your month in numbers','<b>Income</b>: all the money that came in. <b>Expenses</b>: everything you spent. <b>Balance</b>: the difference. Green means you saved that month; red means you spent more than you earned.<br><br><b>Unrecorded cash</b> warns you if you withdrew cash and didn\'t record what you spent it on.<br><br>Use the ‹ › arrows at the top to see another month.'],
@@ -1723,13 +1886,12 @@ const HELP_EN={
  cuotas:['🔢 Installments','If you paid in installments, choose how many. The app splits the total and puts each installment in the right statement, so you know what\'s left each month.<br><br>Many installments commit your future months: use them wisely.'],
  transf:['🔁 Withdrawals and transfers','Moving money between your own accounts <b>isn\'t an expense</b>: it\'s still yours.<br>• ATM withdrawal: account → Cash.<br>• Card payment: account → card.<br><br>Recording it this way avoids counting the same expense twice.']
 };
-const VIEWHELP_EN={inicio:['🏠 Home','Your month at a glance: money in and out, pending payments, your cash flow, cards and accounts.'],movs:['📋 Activity','Everything you recorded, day by day. Search by name, filter by type or payment method, and tap any row to edit it.'],
+const VIEWHELP_EN={inicio:['🏠 Home','Your situation on one screen: this month\'s balance, overdue debts, upcoming due dates, expenses, accounts and how much you can spend per day. Tap any tile for details.'],dres:["⚖️ Balance", "Income minus expenses for the period you choose (month, quarter, six months, year or total), your cash flow and where the money came from."],dven:["🔴 Overdue", "Everything already due that you haven't recorded as paid. Tap <b>Pay</b> on each one; if you pay part, change the amount and the rest stays pending."],dpv:["📅 Coming due", "What you'll have to pay, month by month: cards, loans and recurring expenses. Tap one to pay it early."],dgas:["🧩 Expenses", "Your spending by category, compared with the previous period. The lighter part is estimated (not confirmed yet)."],dcta:["🏦 Accounts", "Your net worth: what you have in cash, banks and wallets, minus what you owe on cards and commitments."],movs:['📋 Activity','Everything you recorded, day by day. Search by name, filter by type or payment method, and tap any row to edit it.'],
  agenda:['📌 Planner','Your money calendar: due dates (cards, loans, recurring expenses) and expected income this month. Below, set up recurring expenses, loans and income.'],flujo:['💧 Projected cash flow','How much money you\'ll have at the end of each month, adding expected income and subtracting what you\'ll pay.'],
  conc:['🔗 Reconcile','Compare your entries with bank and card statements, and check your cash.'],anal:['📊 Insights','Charts to understand your spending and concrete suggestions to save.'],ajustes:['⚙️ Settings','Your cards, accounts, categories, family members, preferences and backups.']};
 const TOURS_EN={nav:[['[data-h=fab]','➕ The most important button','Every time you <b>spend, receive money or withdraw cash</b>, tap here and record it. It takes 5 seconds.<br><br>The secret: record it <b>right away</b> so you don\'t forget.'],
-  ['[data-v=inicio]','🏠 Home','Your month at a glance.'],['[data-v=movs]','📋 Activity','Everything you recorded. Search and edit here.'],['[data-v=agenda]','📌 Planner','Your due dates and income: cards, installments, school, utilities, salary. Also the <b>cash flow</b>.'],
-  ['[data-v=conc]','🔗 Reconcile','Compare your entries with the bank or card statement to find forgotten items or odd charges.'],['[data-v=anal]','📊 Insights','Charts and tips to spend better.'],
-  ['[data-h=gear]','⚙️ Settings','Your cards (closing and due days), accounts, family members and backups. <b>Start here.</b>'],
+  ['[data-v=inicio]','🏠 Home','Your month at a glance.'],['[data-v=movs]','📋 Activity','Everything you recorded. Search and edit here.'],['[data-v=anal]','📊 Insights','Charts and tips to spend better.'],
+  ['[data-h=gear]','⚙️ Settings','Your cards (closing and due days), accounts, family members and backups. <b>Start here.</b>'],['[data-h=eye]','👁 Hide amounts','Covers every number with one tap, so you can show the app without revealing your amounts.'],
   ['#helpBtn','❓ Help','Full tutorial, glossary and replay these guides anytime.<br><br>Also, every section has an <b class="hi" style="display:inline-block">i</b> button explaining what it\'s for.']],
  form:[['[data-h=fTipo]','1️⃣ What are you recording?','<b>Expense</b>: you paid for something. <b>Income</b>: money came in. <b>Withdrawal / Transfer</b>: you moved money between your accounts (e.g. ATM).'],
   ['#fImp','2️⃣ Amount','Type how much it was. If it was in your second currency, switch the currency above.'],['[data-h=fVia]','3️⃣ What did you pay with?','Card, account, wallet or cash. Swipe sideways to see them all.'],
@@ -1861,12 +2023,21 @@ async function demo(){const en=EN();const L=(a,b)=>en?b:a;if(S.movs.length&&!awa
   if(!S.prestamos.length)S.prestamos.push({id:uid(),nombre:L('Préstamo personal','Personal loan'),entidad:L('Banco','Bank'),moneda:M1(),cuota:sc(185000),n:24,pagadas:7,proxima:ymAdd(ym0,-2)+'-10',dia:10,cuenta:'cgal',capital:sc(3000000),tna:en?12:52,auto:true,creadoF:hoyF});
   const cm=ciclo(met('vicbc'),today(),0).cierre;add({tipo:'gasto',fecha:ymAdd(ym0,-8)+'-15',cat:'viaje',importe:sc(1800000),cuotas:12,pend:4,ancla:cm,metodo:'vicbc',desc:L('Pasajes (importado)','Flights (imported)'),importKey:'demo1'});
   if(M2()&&(!S.cfg.tc||+S.cfg.tc===1))S.cfg.tc=({ARS:1200,BRL:5.5,MXN:18,CLP:950,COP:4000,UYU:40,PEN:3.7,EUR:0.92,GBP:0.79,USD:1.08}[M1()]||1);
-  generarAuto();save();render();toast(L('Datos de ejemplo cargados','Sample data loaded'));
+  generarAuto();demoPagar(L('Gas hogar','Gas'));save();render();toast(L('Datos de ejemplo cargados','Sample data loaded'));
 }
+function demoPagar(dejar){const hoy=today(),ymH=hoy.slice(0,7);const add=o=>S.movs.push(Object.assign({id:uid(),moneda:M1(),quien:S.miembros[0],hora:'10:00',cuotas:1},o));
+  for(let k=6;k>=0;k--){const ym=ymAdd(ymH,-k);
+    S.fijos.forEach(f=>{const m=met(f.metodo);if(m&&m.tipo==='credito')return;const st=inicioFijo(f);if(st&&ym<st)return;const d=fijoVence(f,ym);if(!d||d>=hoy)return;if(f.nombre===dejar&&k<=1)return;const e=estadoFijo(f,ym);if(e.full)return;
+      add({tipo:'gasto',fecha:d,cat:f.cat,metodo:f.metodo,importe:Math.round(conv(e.resta,M1(),f.moneda||M1())*100)/100,moneda:f.moneda||M1(),desc:f.nombre,fijo:f.id,fijoMes:ym})});
+    S.prestamos.forEach(p=>{const c=cuotaPrestamo(p,ym);if(!c||c.fecha>=hoy)return;const e=estadoPrest(p,c.k);if(e.full)return;add({tipo:'gasto',fecha:c.fecha,cat:'prest',metodo:p.cuenta,importe:+p.cuota,moneda:p.moneda||M1(),desc:p.nombre,prest:p.id,prestCuota:c.k})})}
+  S.metodos.filter(m=>m.tipo==='credito'&&!esAdic(m)).forEach(m=>{resumenesTarjeta(m,ymAdd(ymH,-6)+'-01',8).forEach(r=>{if(r.venc>=hoy||r.total<0.5)return;
+    const lim=ymd(new Date(parseYmd(r.venc).getTime()+12*864e5));if(S.movs.some(x=>x.tipo==='transf'&&x.destino===m.id&&x.fecha>r.cierre&&x.fecha<=lim))return;
+    add({tipo:'transf',fecha:r.venc,origen:m.cuentaPago||'cgal',destino:m.id,importe:Math.round(r.ars*100)/100,desc:(EN()?'Payment ':'Pago ')+m.nombre});
+    if(r.usd>=0.5)add({tipo:'transf',fecha:r.venc,origen:m.cuentaPago||'cgal',destino:m.id,importe:Math.round(r.usd*100)/100,moneda:M2(),desc:(EN()?'Payment ':'Pago ')+m.nombre})})})}
 /* ============ Inicio ============ */
 if('serviceWorker' in navigator&&location.protocol==='https:'&&!/claude|claudeusercontent/.test(location.hostname)){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(S.cfg.theme==='auto'){applyTheme();render()}});
-window.addEventListener('popstate',()=>{if($('#sheetBg').classList.contains('on'))closeSheet()});
+window.addEventListener('popstate',()=>{if($('#sheetBg').classList.contains('on'))closeSheet();else if(HIST.length)back()});
 generarAuto();
 render();
 cloudInit();

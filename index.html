@@ -168,6 +168,9 @@ nav.bot .fab{background:var(--pri)!important;box-shadow:0 4px 14px rgba(36,87,21
 .ctl{font-size:clamp(12px,1.55vh,13.5px)!important;line-height:1.75!important}
 .dbig{display:flex;justify-content:center;padding:4px 0 8px}.dbig svg{width:min(78vw,280px);height:auto}
 .lgb{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;font-size:13.5px}.lgb>div{display:flex;align-items:center;gap:6px;min-width:0}.lgb i{width:9px;height:9px;border-radius:3px;flex:none}.lgb .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink2)}.lgb b{font-variant-numeric:tabular-nums;white-space:nowrap}.lgb .p{color:var(--muted);font-size:12px;width:34px;text-align:right;flex:none}
+.hero.hcmp{padding-bottom:36px}.hero.hcmp .hv{font-size:24px}.hero.hcmp .hs{font-size:12px}
+.dbig{padding:0 0 6px!important}.dbig svg{width:max(170px,min(64vw,calc(100vh - 560px),260px))!important}
+.lgb{gap:1px 0!important;font-size:12.5px!important;line-height:1.45}
 .gdn{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}.gdn .lgm{width:100%}
 .ctl>div span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-height:700px){.ss2{display:none}.gdn{flex-direction:row}.g22 .spot svg{height:52px}}
@@ -656,13 +659,13 @@ function gastosCat(yms,soloReal){const ymH=today().slice(0,7);const m={};const a
   return Object.entries(m).map(([k,o])=>({id:k,r:o.r,e:o.e,v:o.r+o.e})).filter(d=>d.v>0.5).sort((a,b)=>b.v-a.v)}
 function topCats(gc,n){const top=gc.slice(0,n-1).map(d=>Object.assign({},d));const rest=gc.slice(n-1);
   if(rest.length===1)top.push(Object.assign({},rest[0]));else if(rest.length)top.push({id:'_otros',r:rest.reduce((a,d)=>a+d.r,0),e:rest.reduce((a,d)=>a+d.e,0),v:rest.reduce((a,d)=>a+d.v,0),n:rest.length});
-  const XC=['#8e6bd6','#c9a227','#3aa6a0','#c0587e','#5e9e3a','#b5651d','#4f7fb0'];return top.map((d,i)=>Object.assign(d,{c:COLORS[i]||XC[(i-8)%7],l:d.id==='_otros'?'📦 Otros':cat(d.id).e+' '+cat(d.id).nombre}))}
-function donut2(data,size,center){const tot=data.reduce((a,d)=>a+d.v,0);if(!tot)return'';const w=Math.max(9,size*0.16),r=size/2-w/2-1,cx=size/2;let a0=-Math.PI/2,p='';
+  const XC=['#8e6bd6','#c9a227','#3aa6a0','#c0587e','#5e9e3a','#b5651d','#4f7fb0'];return top.map((d,i)=>Object.assign(d,{c:COLORS[i]||XC[(i-8)%7],ic:d.id==='_otros'?'📦':cat(d.id).e,l:d.id==='_otros'?'📦 Otros':cat(d.id).e+' '+cat(d.id).nombre}))}
+function donut2(data,size,center,icons){const tot=data.reduce((a,d)=>a+d.v,0);if(!tot)return'';const w=Math.max(9,size*0.16),r=size/2-w/2-1,cx=size/2;let a0=-Math.PI/2,p='';
   const arc=(s,e,c,op,tip)=>{if(e-s<=0.001)return'';if(e-s>=Math.PI*2-0.001)return`<circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="${c}" stroke-width="${w}" opacity="${op}" data-tip="${esc(tip)}"/>`;const L=e-s>Math.PI?1:0;
     return`<path d="M${(cx+r*Math.cos(s)).toFixed(2)},${(cx+r*Math.sin(s)).toFixed(2)} A${r},${r} 0 ${L} 1 ${(cx+r*Math.cos(e)).toFixed(2)},${(cx+r*Math.sin(e)).toFixed(2)}" fill="none" stroke="${c}" stroke-width="${w}" opacity="${op}" data-tip="${esc(tip)}"/>`};
-  const gap=data.length>1?0.035:0;
-  data.forEach(d=>{const a=d.v/tot*Math.PI*2;const s=a0+gap/2,e=a0+a-gap/2;const m=s+(e-s)*(d.r/d.v);const tip=d.l+': '+fmt(d.v)+' ('+Math.round(d.v/tot*100)+'%)';p+=arc(s,m,d.c,1,tip)+arc(m,e,d.c,.38,tip);a0+=a});
-  return`<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="Distribución" style="flex:none">${p}${center||''}</svg>`}
+  const gap=data.length>1?0.035:0;let ic='';
+  data.forEach(d=>{const a=d.v/tot*Math.PI*2;const s=a0+gap/2,e=a0+a-gap/2;const m=s+(e-s)*(d.r/d.v);const tip=d.l+': '+fmt(d.v)+' ('+Math.round(d.v/tot*100)+'%)';p+=arc(s,m,d.c,1,tip)+arc(m,e,d.c,.38,tip);if(icons&&e-s>0.2&&d.ic){const mid=(s+e)/2;const fs=Math.min(w*0.62,(e-s)*r*0.8);ic+=`<text x="${(cx+r*Math.cos(mid)).toFixed(1)}" y="${(cx+r*Math.sin(mid)).toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="${fs.toFixed(1)}" style="pointer-events:none">${d.ic}</text>`}a0+=a});
+  return`<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="Distribución" style="flex:none">${p}${ic}${center||''}</svg>`}
 function spark(vals,w,h){const mn=Math.min(...vals),mx=Math.max(...vals),rg=(mx-mn)||1;const X=i=>2+(w-6)*i/(vals.length-1||1),Y=v=>h-3-(h-6)*(v-mn)/rg;const last=vals[vals.length-1];const c=last>=0?'var(--good)':'var(--bad)';
   return`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true" style="flex:none">${mn<0&&mx>0?`<line x1="0" x2="${w}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--line)" stroke-dasharray="3 3"/>`:''}<polyline points="${vals.map((v,i)=>X(i).toFixed(1)+','+Y(v).toFixed(1)).join(' ')}" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"/><circle cx="${X(vals.length-1)}" cy="${Y(last)}" r="3" fill="${c}"/></svg>`}
 function cuentasRes(ven){const s=saldos();const v=m=>conv(s[m.id]||0,m.moneda||M1(),M1());
@@ -746,9 +749,9 @@ function vPv(){const P=porVencer(12);const mx=Math.max(1,...P.meses.map(m=>m.tot
 /* ============ Detalle: Gastos ============ */
 function vGas(){const yms=perYms(PER);const gc=gastosCat(yms);const tot=gc.reduce((a,d)=>a+d.v,0),est=gc.reduce((a,d)=>a+d.e,0);
   const prev=PER==='tot'?null:gastosCat(yms.map(y=>ymAdd(y,-yms.length)));const mx=gc[0]?gc[0].v:1;const tc7=topCats(gc,15);
-  let h=`<div class="hero">${perSeg()}<div class="hl mt">${perTxt(PER)}</div><div class="hv amt">${fmt(tot)}</div><div class="hs">${est>0.5?'incluye <span class="amt">'+fmt(est)+'</span> estimados sin confirmar':'todo confirmado'}</div></div><div class="ovl">`;
+  let h=`<div class="hero hcmp">${perSeg()}<div class="hl" style="margin-top:6px">${perTxt(PER)}</div><div class="hv amt">${fmt(tot)}</div><div class="hs">${est>0.5?'incluye <span class="amt">'+fmt(est)+'</span> estimados sin confirmar':'todo confirmado'}</div></div><div class="ovl">`;
   if(!gc.length)return h+`<div class="card empty"><div class="e">🌱</div>No hay gastos en este período.</div></div>`;
-  h+=`<div class="card"><div class="dbig">${donut2(tc7,260,`<text x="130" y="120" text-anchor="middle" font-size="14" fill="var(--muted)">Total</text><text x="130" y="148" text-anchor="middle" font-size="26" font-weight="800" fill="var(--ink)">${fmtL(tot)}</text>${est>0.5?`<text x="130" y="170" text-anchor="middle" font-size="11.5" fill="var(--muted)">${EN()?'incl.':'incluye'} ${fmtL(est)} est.</text>`:''}`)}</div>
+  h+=`<div class="card" style="padding:10px 14px"><div class="dbig">${donut2(tc7,260,`<text x="130" y="120" text-anchor="middle" font-size="14" fill="var(--muted)">Total</text><text x="130" y="148" text-anchor="middle" font-size="26" font-weight="800" fill="var(--ink)">${fmtL(tot)}</text>${est>0.5?`<text x="130" y="170" text-anchor="middle" font-size="11.5" fill="var(--muted)">${EN()?'incl.':'incluye'} ${fmtL(est)} est.</text>`:''}`,1)}</div>
    <div class="lgb">${tc7.map(d=>`<div><i style="background:${d.c}"></i><span class="n">${esc(d.l)}</span><b class="amt">${fmtL(d.v)}</b><span class="p">${Math.round(d.v/tot*100)}%</span></div>`).join('')}</div></div>
   <div class="card"><h2>🧩 Todos los rubros</h2>${gc.map(d=>{const o=prev&&prev.find(x=>x.id===d.id);const p=o&&o.v>0.5?Math.round((d.v/o.v-1)*100):null;
     const chip=!prev?'':p===null?'<span class="cmp">nuevo</span>':p>2?`<span class="cmp neg">+${p}%</span>`:p<-2?`<span class="cmp pos">${p}%</span>`:'<span class="cmp">=</span>';const c=(tc7.find(x=>x.id===d.id)||tc7[tc7.length-1]).c;
@@ -1405,7 +1408,7 @@ function vAjustes(){
   <div class="card"><h2 data-h="compartidas">☁️ Tarjetas compartidas${hi('compartidas')}</h2><p class="small" style="margin-top:0">Para titulares con adicionales: los gastos del adicional te llegan al instante, con aviso en el teléfono.</p>
    <button class="btn full" onclick="openCuenta()">${cloudOK()?(CL().nombre?'☁️ Mi cuenta compartida':'Crear cuenta / ingresar'):'Configurar'}</button></div>
   <div class="card"><h2>❓ Ayuda</h2><p class="small" style="margin-top:0">Tutorial, guía de cada pantalla y glosario de palabras financieras.</p><button class="btn full" onclick="openAyuda()">Abrir ayuda</button></div>
-  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v4.1 · ${S.movs.length} movimientos</div>`;
+  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v4.2 · ${S.movs.length} movimientos</div>`;
   return h;
 }
 let MF=null;

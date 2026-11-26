@@ -1169,7 +1169,7 @@ function saveMov(){
   if(F.tipo==='transf'){o.origen=F.origen;o.destino=F.destino}
   S.cfg.ultQuien=F.quien;
   if(o.cat&&o.desc&&o.tipo!=='transf'){S.cfg.memCat=S.cfg.memCat||{};S.cfg.memCat[nrm(o.desc)]=o.cat}
-  if(F._pend)S.pend=(S.pend||[]).filter(x=>x.id!==F._pend);
+  if(F._pend){const it=(S.pend||[]).find(x=>x.id===F._pend);const nro=it&&it.p&&it.p.cuentaNro;const usado=o.tipo==='transf'?o.origen:o.tipo==='ingreso'?o.destino:o.metodo;if(nro&&usado){S.cfg.memMet=S.cfg.memMet||{};S.cfg.memMet[nro]=usado}S.pend=(S.pend||[]).filter(x=>x.id!==F._pend)}
   const ix=S.movs.findIndex(m=>m.id===o.id);const prev=ix>=0?S.movs[ix]:null;if(ix>=0)S.movs[ix]=o;else S.movs.push(o);cloudTrack(prev,o);
   save();closeSheet();toast(F.id?'Actualizado ✔':'Guardado ✔');
   if(o.tipo==='gasto'&&esAdic(met(o.metodo))){const ta=topeAdicional();if(ta&&ta.tope){const p=ta.u/ta.tope;if(p>=1)setTimeout(()=>dlg(`<h3>⚠️ Llegaste al tope</h3><p>Con la tarjeta de ${esc(ta.tit)} llevás <b>${fmt(ta.u)}</b> este mes y el tope es <b>${fmt(ta.tope)}</b>.</p><div class="actions"><button class="btn" onclick="dlgClose()">Entendido</button></div>`),400);else if(p>=0.8)setTimeout(()=>toast(`Llevás el ${Math.round(p*100)}% del tope de la tarjeta (${fmtC(ta.tope-ta.u)} disponibles)`),1600)}}
@@ -1463,7 +1463,7 @@ function vAjustes(){
   <div class="card"><h2 data-h="compartidas">☁️ Tarjetas compartidas${hi('compartidas')}</h2><p class="small" style="margin-top:0">Para titulares con adicionales: los gastos del adicional te llegan al instante, con aviso en el teléfono.</p>
    <button class="btn full" onclick="openCuenta()">${cloudOK()?(CL().nombre?'☁️ Mi cuenta compartida':'Crear cuenta / ingresar'):'Configurar'}</button></div>
   <div class="card"><h2>❓ Ayuda</h2><p class="small" style="margin-top:0">Tutorial, guía de cada pantalla y glosario de palabras financieras.</p><button class="btn full" onclick="openAyuda()">Abrir ayuda</button></div>
-  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v4.7.1 · ${S.movs.length} movimientos</div>`;
+  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v4.7.2 · ${S.movs.length} movimientos</div>`;
   return h;
 }
 let MF=null;
@@ -2208,6 +2208,8 @@ function parseAviso(raw){const t=String(raw||'').replace(/\r/g,'').replace(/ /g
   {const id=L.findIndex(l=>/^de\s*:?$/i.test(nrm(l))),ip=L.findIndex(l=>/^para\s*:?$/i.test(nrm(l)));const io=L.findIndex(l=>/origen y destino/i.test(nrm(l)));
    const bloque=id>=0&&ip>id?L.slice(id,ip).join('\n'):io>=0?L.slice(io,io+4).join('\n'):'';const resto=L.filter(l=>!/^(cuenta en|cbu|cvu)/i.test(nrm(l))||!bloque).join('\n');
    r.metodo=(bloque&&metDeTexto(bloque+'\n'+(t.match(/(?:con|con tu)\s+(?:visa|master|amex|tarjeta)[^\n]*/i)||[''])[0],r.tipo))||metDeTexto(bloque?t.replace(L.slice(ip).join('\n'),''):t,r.tipo)||(bloque?'':metDeTexto(t,r.tipo))}
+  {const nro=(t.match(/N[°º*?]?\s*(\d{6,8})[-\s]?\d/)||[])[1];if(nro){r.cuentaNro=nro;const mm=(S.cfg.memMet||{})[nro];if(mm&&met(mm))r.metodo=mm}
+   if(!r.metodo&&/(\bca \$|caja de ahorro|cuenta corriente|\bcc \$)/.test(k)){const cs=S.metodos.filter(x=>x.tipo==='cuenta'&&(x.moneda||M1())===M1());if(cs.length===1)r.metodo=cs[0].id}}
   if(r.tipo==='transf'){r.origen=r.metodo||S.cfg.ultDest||'cgal';r.destino=(S.metodos.find(x=>x.tipo==='efectivo')||{}).id||'efe'}
   r.cat=r.desc?sugCat(r.desc,r.tipo):'';
   r.ok=!!r.importe;return r}
@@ -2238,9 +2240,16 @@ function pegarAviso(){dlg(`<h3>📋 Pegar texto de un aviso</h3><p class="small"
 function procesarTexto(txt,fuente,archivo){if(!txt||!txt.trim())return toast('No hay texto para analizar');const p=parseAviso(txt);const it=agregarPend(p,fuente,archivo,{tipo:'texto',texto:String(txt).slice(0,2500)});
   if(!p.ok){toast('No encontré el importe: completalo a mano');}confirmarPend(it.id);render()}
 async function ocrImagen(file){if(!window.Tesseract){await new Promise((ok,ko)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=ok;s.onerror=ko;document.head.appendChild(s)})}
-  let src=file;try{const bmp=await createImageBitmap(file);const sc=Math.min(2,1800/Math.max(bmp.width,bmp.height));const w=Math.round(bmp.width*sc),h=Math.round(bmp.height*sc);const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(bmp,0,0,w,h);
-    const d=x.getImageData(0,0,w,h),a=d.data;for(let i=0;i<a.length;i+=4){const g=0.299*a[i]+0.587*a[i+1]+0.114*a[i+2];const v=g>200?255:g<110?0:Math.round((g-110)*255/90);a[i]=a[i+1]=a[i+2]=v}x.putImageData(d,0,0);src=c}catch(e){}
-  const res=await window.Tesseract.recognize(src,EN()?'eng':'spa');return(res&&res.data&&res.data.text)||''}
+  const T=window.Tesseract;const w=await T.createWorker(EN()?'eng':'spa');try{await w.setParameters({tessedit_pageseg_mode:'3'})}catch(e){}
+  let bmp=null;try{bmp=await createImageBitmap(file)}catch(e){}
+  const lienzo=(maxDim,umbral,recorte)=>{if(!bmp)return file;const ch=recorte?Math.round(bmp.height*recorte):bmp.height;const sc=Math.min(2,maxDim/Math.max(bmp.width,ch));const W=Math.round(bmp.width*sc),H=Math.round(ch*sc);const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,W,H);x.drawImage(bmp,0,0,bmp.width,ch,0,0,W,H);
+    if(umbral){const d=x.getImageData(0,0,W,H),a=d.data;for(let i=0;i<a.length;i+=4){const g=0.299*a[i]+0.587*a[i+1]+0.114*a[i+2];const v=g>200?255:g<110?0:Math.round((g-110)*255/90);a[i]=a[i+1]=a[i+2]=v}x.putImageData(d,0,0)}return c};
+  const leer=async src=>{try{const r=await w.recognize(src);return(r&&r.data&&r.data.text)||''}catch(e){return''}};
+  const tieneImporte=t=>/(?:[$S5§]\s?)?\d{1,3}(?:[.,]\d{3})+(?:[.,]\d{1,2})?/.test(t.split('\n').filter(l=>!/(cuit|cuil|cbu|cvu|n[°º*?]|operaci|referencia|\d{1,2}\/\d{1,2})/i.test(l)).join('\n'));
+  try{let t=await leer(lienzo(1800,true));
+    // El importe suele estar en letra muy grande y a veces no se lee: segunda pasada más chica y sin filtro, y tercera solo con la parte de arriba
+    if(!tieneImporte(t)){const t2=await leer(lienzo(900,false));t+='\n'+t2;if(!tieneImporte(t2)){t+='\n'+await leer(lienzo(700,false,0.45))}}
+    return t}finally{try{await w.terminate()}catch(e){}}}
 async function procesarArchivos(files,fuente,texto){closeSheet();let n=0;
   if(texto&&texto.trim()&&!files.length){procesarTexto(texto,fuente);return}
   for(const f of files){try{let tx='';

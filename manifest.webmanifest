@@ -1,13 +1,13 @@
 {
-  "name": "Cuentas Claras - Finanzas familiares",
-  "short_name": "Cuentas Claras",
-  "description": "Gastos, cuotas, tarjetas, conciliación de resúmenes y efectivo.",
+  "name": "Antiva - Anticipá tu futuro financiero",
+  "short_name": "Antiva",
+  "description": "Anticipá tu futuro financiero: gastos, cuotas, tarjetas, vencimientos y cashflow familiar.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f4f5f9",
-  "theme_color": "#2457d6",
+  "theme_color": "#292B38",
   "lang": "es-AR",
   "categories": [
     "finance",

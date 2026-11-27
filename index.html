@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#2457d6">
+<meta name="theme-color" content="#292B38">
 <meta name="description" content="Finanzas personales y familiares: gastos, cuotas, tarjetas, conciliación de resúmenes y efectivo.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Cuentas Claras</title>
+<title>Antiva</title>
 <style>
 :root{
   --bg:#f4f5f9;--card:#ffffff;--ink:#111318;--ink2:#52545e;--muted:#8a8d99;--line:#e6e7ee;
-  --pri:#2a3fbf;--pri2:#4f63e6;--priSoft:#e8ebff;
+  --pri:#7439B8;--pri2:#8a52cc;--priSoft:#efe7f8;
   --good:#0f8a4b;--goodSoft:#e3f6ec;--warn:#b86e00;--warnSoft:#fff3dd;--bad:#c62f2f;--badSoft:#fde8e8;
   --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--s8:#9a9ca6;
   --r:18px;--shadow:0 2px 10px rgba(20,24,60,.07);
@@ -29,7 +29,7 @@
 html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 button,input,select,textarea{font:inherit;color:inherit}
-header.top{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,#2a3fbf,#5b3fd1);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 12px 14px;display:flex;align-items:center;gap:7px}
+header.top{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,#5a2a99,#8a4fd0);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 12px 14px;display:flex;align-items:center;gap:7px}
 header.top h1{font-size:17px;margin:0;flex:1;font-weight:700;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .mes{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.16);border-radius:999px;padding:2px}
 .mes button{background:none;border:0;color:#fff;width:30px;height:32px;border-radius:50%;font-size:18px;cursor:pointer}
@@ -48,7 +48,7 @@ nav.bot{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--card)
 nav.bot button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--muted);padding:4px 2px;min-width:50px;flex:1;cursor:pointer}
 nav.bot button .i{font-size:21px;line-height:1}
 nav.bot button.on{color:var(--pri);font-weight:600}
-nav.bot .fab{flex:none!important;min-width:0!important;background:linear-gradient(135deg,#2a3fbf,#5b3fd1);color:#fff;width:58px;height:58px;border-radius:50%;margin-top:-26px;font-size:30px;box-shadow:0 6px 18px rgba(42,63,191,.4);justify-content:center}
+nav.bot .fab{flex:none!important;min-width:0!important;background:linear-gradient(135deg,#5a2a99,#8a4fd0);color:#fff;width:58px;height:58px;border-radius:50%;margin-top:-26px;font-size:30px;box-shadow:0 6px 18px rgba(42,63,191,.4);justify-content:center}
 .row{display:flex;align-items:center;gap:10px}
 .list .it{display:flex;align-items:center;gap:12px;padding:10px 2px;border-bottom:1px solid var(--line);cursor:pointer}
 .list .it:last-child{border-bottom:0}
@@ -148,10 +148,10 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
 .gl dt{font-weight:700;margin-top:12px}.gl dd{margin:3px 0 0;color:var(--ink2);font-size:14px;line-height:1.45}
 
 /* ===== v4 · estilo billetera ===== */
-:root{--bg:#eef0f5;--line:#e4e6ee;--pri:#2457d6;--pri2:#3b6cf0;--priSoft:#e6edfd;--r:16px;--shadow:0 1px 3px rgba(20,30,60,.07),0 1px 1px rgba(20,30,60,.04);--hc:#2457d6}
-body[data-hc=bad]{--hc:#cf3a3a}body[data-hc=vio]{--hc:#5b45c9}
-:root[data-theme="dark"]{--bg:#0e1014;--card:#1a1c22;--line:#2a2c34;--pri:#7d9cf7;--pri2:#9ab3fa;--priSoft:#1d2846}
-:root[data-theme="dark"] body{--hc:#1d3a86}:root[data-theme="dark"] body[data-hc=bad]{--hc:#862a2a}:root[data-theme="dark"] body[data-hc=vio]{--hc:#3d3189}
+:root{--bg:#eef0f5;--line:#e4e6ee;--pri:#7439B8;--pri2:#8a52cc;--priSoft:#efe7f8;--r:16px;--shadow:0 1px 3px rgba(20,30,60,.07),0 1px 1px rgba(20,30,60,.04);--hc:#292B38}
+body[data-hc=bad]{--hc:#cf3a3a}body[data-hc=vio]{--hc:#7439B8}
+:root[data-theme="dark"]{--bg:#0e1014;--card:#1a1c22;--line:#2a2c34;--pri:#b99bd9;--pri2:#cdb5e6;--priSoft:#2a2140}
+:root[data-theme="dark"] body{--hc:#22232e}:root[data-theme="dark"] body[data-hc=bad]{--hc:#862a2a}:root[data-theme="dark"] body[data-hc=vio]{--hc:#4e2780}
 header.top{background:var(--hc)!important;padding-bottom:10px}
 .card,.kpi{border:0}:root[data-theme="dark"] .card,:root[data-theme="dark"] .kpi,:root[data-theme="dark"] .spot{border:1px solid var(--line)}
 nav.bot .fab{background:var(--pri)!important;box-shadow:0 4px 14px rgba(36,87,214,.35)}
@@ -205,12 +205,20 @@ nav.bot .fab{position:relative}nav.bot .fab .fbg{position:absolute;top:-2px;righ
 .cmp{font-size:11px;font-weight:700;color:var(--muted);margin-left:2px}.cmp.neg{color:var(--bad)}.cmp.pos{color:var(--good)}
 details.card>summary{font-weight:700;font-size:13px;color:var(--ink2)}
 .priv .amt,.priv .kpi .v,.priv .it .am,.priv .cc .v,.priv td.n,.priv .hero .hv{filter:blur(7px)}
+/* ===== v4.8 · marca Antiva ===== */
+.brand{display:inline-flex;align-items:center;gap:8px;vertical-align:middle}
+.brand .logo{height:20px;width:auto;flex:none}
+.brand .wm{font-weight:800;letter-spacing:.14em;font-size:17px}
+.splash-logo{display:block;margin:4px auto 6px;height:46px;width:auto}
+.slogan{text-align:center;color:var(--muted);font-size:13px;margin:2px 0 10px;font-weight:600}
+.slide p.slogan,.slogan{text-align:center!important}
+@media(max-width:380px){.brand{gap:6px}.brand .logo{height:16px}.brand .wm{font-size:15px;letter-spacing:.06em}}
 </style>
 </head>
 <body>
 <header class="top">
   <button id="backBtn" class="hbtn" onclick="atras()" aria-label="Volver" style="display:none;font-size:22px;line-height:1">‹</button>
-  <h1 id="ttl">Cuentas Claras</h1>
+  <h1 id="ttl" aria-label="Antiva">Antiva</h1>
   <div class="mes" id="mesSel"><button onclick="moveMes(-1)" aria-label="Mes anterior">‹</button><span id="mesLbl"></span><button onclick="moveMes(1)" aria-label="Mes siguiente">›</button></div>
   <button id="eyeBtn" class="hbtn" data-h="eye" onclick="togPriv()" aria-label="Ocultar importes" style="font-size:16px">👁</button>
   <button id="helpBtn" class="hbtn" onclick="openAyuda()" aria-label="Ayuda">?</button>
@@ -351,7 +359,7 @@ window.TR_DICT={
 "⚙️ Preferencias":"⚙️ Preferences","Moneda principal":"Main currency","Segunda moneda":"Second currency","Formato de fecha en resúmenes importados":"Date format in imported statements","DD/MM/AAAA":"DD/MM/YYYY","MM/DD/AAAA":"MM/DD/YYYY","Tope \"gasto hormiga\"":"\"Small purchase\" limit","Tema":"Theme","Claro":"Light","Oscuro":"Dark",
 "Cotización: {0} {1} = ? {2}":"Exchange rate: {0} {1} = ? {2}","💾 Respaldo":"💾 Backup","Los datos se guardan sólo en este teléfono. Exportá un respaldo seguido (y antes de cambiar de celular).":"Data is stored only on this phone. Export a backup regularly (and before changing phones).","⬇️ Exportar":"⬇️ Export","Restaurar pegando texto":"Restore by pasting text","Exportar todo a CSV (Excel)":"Export everything to CSV (Excel)","Cargar datos de ejemplo":"Load sample data","Borrar todo":"Delete everything",
 "☁️ Tarjetas compartidas":"☁️ Shared cards","Para titulares con adicionales: los gastos del adicional te llegan al instante, con aviso en el teléfono.":"For primary cardholders with additional cards: the additional cardholder's expenses reach you instantly, with a phone notification.","Configurar":"Set up","Crear cuenta / ingresar":"Create account / sign in","☁️ Mi cuenta compartida":"☁️ My shared account",
-"❓ Ayuda":"❓ Help","Tutorial, guía de cada pantalla y glosario de palabras financieras.":"Tutorial, guide to each screen and glossary of financial terms.","Abrir ayuda":"Open help","Cuentas Claras v{0} · {1} movimientos":"Cuentas Claras v{0} · {1} transactions",
+"❓ Ayuda":"❓ Help","Tutorial, guía de cada pantalla y glosario de palabras financieras.":"Tutorial, guide to each screen and glossary of financial terms.","Abrir ayuda":"Open help","Antiva v{0} · {1} movimientos":"Antiva v{0} · {1} transactions",
 "Editar concepto":"Edit category","Nuevo concepto":"New category","Cancelar":"Cancel","Aceptar":"OK","En uso: no se puede borrar":"In use: it can't be deleted",
 "Nombre del integrante (ej. Ana, Mercedes)":"Member's name (e.g. Anna, Mary)","Nombre del integrante (ej. {0}, Mercedes)":"Member's name (e.g. {0}, Mary)","Ya existe ese nombre":"That name already exists","Nuevo nombre para {0}":"New name for {0}","El nombre no puede quedar vacío":"The name can't be empty","Ya existe un integrante con ese nombre":"A member with that name already exists","Nombre actualizado ✔":"Name updated ✔",
 "Tiene que quedar al menos un integrante activo":"At least one member must stay active","💤 Dar de baja":"💤 Deactivate","Ya no aparece al cargar. Su historial queda guardado y podés reactivarlo.":"They no longer appear when entering data. Their history is kept and you can reactivate them.","…o eliminarlo y pasar sus movimientos a:":"…or delete them and move their transactions to:","🗑 Eliminar y pasar movimientos":"🗑 Delete and move transactions","🗑 Eliminar definitivamente":"🗑 Delete permanently",
@@ -390,7 +398,7 @@ window.TR_DICT={
 "💳 {0} gastos nuevos de adicionales":"💳 {0} new expenses from additional cards","💳 {0} gasto nuevo de adicionales":"💳 {0} new expense from additional cards","📌 {0} débitos automáticos registrados":"📌 {0} automatic debits recorded","📌 {0} débito automático registrado":"📌 {0} automatic debit recorded",
 "📧 Falta confirmar el email":"📧 Email confirmation needed","Datos de ejemplo cargados":"Sample data loaded","Sample data loaded":"Sample data loaded",
 // --- asistente / misceláneos ---
-"Atrás":"Back","Español":"Español","English":"English","Cuentas Claras":"Cuentas Claras","Respaldo":"Backup","Error":"Error","Volver a ver":"Show again"
+"Atrás":"Back","Español":"Español","English":"English","Antiva":"Antiva","Respaldo":"Backup","Error":"Error","Volver a ver":"Show again"
 };
 Object.assign(window.TR_DICT,{"; última vence {0} {1}.":"; last one due {0} {1}.","de {0} cuotas; la primera pendiente entra en el resumen que cierra el {1} {2}.":"of {0} installments left; the first pending one goes into the statement closing on {1} {2}.","{0}. Pública":"{0}. Public","{0}. Privada":"{0}. Private","Total {0}. Si pagás menos, el resto queda pendiente.":"Total {0}. If you pay less, the rest stays pending.","💳 Titular":"💳 Primary","Total {0} · ya pagado {1} ·":"Total {0} · already paid {1} ·","🔗 Adicional":"🔗 Additional card","el resumen lo paga {0}":"statement paid by {0}","💳 Titular {0}":"💳 Primary {0}","Titular {0}":"Primary {0}","{0}/{1} pagadas":"{0}/{1} paid","cuota {0}":"installment {0}","ya pagado {0}":"already paid {0}","{0} Privada":"{0} Private","{0} Pública":"{0} Public","Tarjeta":"Card","Sin cuotas pendientes":"No pending installments","{0} cierra en hoy":"{0} closes today","plástico {0}":"card {0}"});
 window.TR_PAT=[
@@ -488,7 +496,9 @@ const norm=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''
 const plLbl=(m,pl)=>pl?pl:'Titular';
 const MES_ES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],MESL_ES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MES_EN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],MESL_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
-function applyLang(){MES=EN()?MES_EN:MES_ES;MESL=EN()?MESL_EN:MESL_ES;document.documentElement.lang=EN()?'en':'es';document.title='Cuentas Claras';if(window.__trReady)trInit()}
+const BRAND_HTML='<span class="brand"><svg class="logo" viewBox="0 -320 800 325" aria-hidden="true"><path d="M0,0 L50,0 Q200,0 310,-102 L540,-315 L490,-315 Q340,-315 230,-213 Z" fill="#fff"/><path transform="translate(258,0)" d="M0,0 L50,0 Q200,0 310,-102 L540,-315 L490,-315 Q340,-315 230,-213 Z" fill="#b98cf0"/></svg><span class="wm">ΛNTIVΛ</span></span>';
+const SLOGAN=()=>EN()?'Anticipate your financial future.':'Anticipá tu futuro financiero.';
+function applyLang(){MES=EN()?MES_EN:MES_ES;MESL=EN()?MESL_EN:MESL_ES;document.documentElement.lang=EN()?'en':'es';document.title='Antiva';if(window.__trReady)trInit()}
 function setLang(l){const from=S.cfg.lang||'es';if(from!==l){const ix=from==='en'?2:1,iy=l==='en'?2:1;[...CATS_DEF,...CATS_ING].forEach(r=>{const c=S.cats.find(x=>x.id===r[0]);if(c&&c.nombre===r[ix])c.nombre=r[iy]});
   const dm={efe:['Efectivo','Cash'],cgal:['Cuenta bancaria','Bank account'],mp:['Billetera virtual','Digital wallet'],dgal:['Tarjeta de débito','Debit card'],vgal:['Tarjeta de crédito','Credit card']};S.metodos.forEach(m=>{const d=dm[m.id];if(d&&m.nombre===d[from==='en'?1:0])m.nombre=d[l==='en'?1:0]});
   const yo=from==='en'?'Me':'Yo',yo2=l==='en'?'Me':'Yo';const i=S.miembros.indexOf(yo);if(i>=0&&!S.miembros.includes(yo2)){S.miembros[i]=yo2;S.movs.forEach(m=>{if(m.quien===yo)m.quien=yo2})}}
@@ -596,10 +606,10 @@ function render(){
   $('#mesSel').style.display=['ajustes','conc','flujo','dven','dpv','dcta'].includes(VIEW)?'none':'';
   $('#backBtn').style.display=ROOTS.includes(VIEW)?'none':'';
   const hc={dven:'bad',dgas:'vio',dadi:'adi'}[VIEW]||'';document.body.dataset.hc=hc;
-  try{document.querySelector('meta[name=theme-color]').content=(document.documentElement.dataset.theme==='dark'?{bad:'#862a2a',vio:'#3d3189',adi:'#0b5c49'}[hc]||'#1d3a86':{bad:'#cf3a3a',vio:'#5b45c9',adi:'#0f8a6c'}[hc]||'#2457d6')}catch(e){}
+  try{document.querySelector('meta[name=theme-color]').content=(document.documentElement.dataset.theme==='dark'?{bad:'#862a2a',vio:'#4e2780',adi:'#0b5c49'}[hc]||'#22232e':{bad:'#cf3a3a',vio:'#7439B8',adi:'#0f8a6c'}[hc]||'#292B38')}catch(e){}
   const V={inicio:vInicio,movs:vMovs,agenda:vAgenda,flujo:vFlujo,conc:vConc,anal:vAnal,ajustes:vAjustes,dres:vRes,dven:vVen,dpv:vPv,dgas:vGas,dcta:vCta,dadi:vAdi}[VIEW]||vInicio;
   $('#view').innerHTML=V();
-  $('#ttl').innerHTML=VIEW==='inicio'?'Cuentas Claras':{movs:'Movimientos',agenda:'Agenda',flujo:'Cashflow proyectado',conc:'Conciliación',anal:'Análisis',ajustes:'Ajustes',dres:'Resultado',dven:'Vencido',dpv:'Por vencer',dgas:'Gastos',dcta:'Cuentas',dadi:'Adicional'}[VIEW];
+  $('#ttl').innerHTML=VIEW==='inicio'?BRAND_HTML:{movs:'Movimientos',agenda:'Agenda',flujo:'Cashflow proyectado',conc:'Conciliación',anal:'Análisis',ajustes:'Ajustes',dres:'Resultado',dven:'Vencido',dpv:'Por vencer',dgas:'Gastos',dcta:'Cuentas',dadi:'Adicional'}[VIEW];
   applyPriv();fitHome();fabBadge();bindTips();setTimeout(maybeTour,650);
 }
 
@@ -1463,7 +1473,7 @@ function vAjustes(){
   <div class="card"><h2 data-h="compartidas">☁️ Tarjetas compartidas${hi('compartidas')}</h2><p class="small" style="margin-top:0">Para titulares con adicionales: los gastos del adicional te llegan al instante, con aviso en el teléfono.</p>
    <button class="btn full" onclick="openCuenta()">${cloudOK()?(CL().nombre?'☁️ Mi cuenta compartida':'Crear cuenta / ingresar'):'Configurar'}</button></div>
   <div class="card"><h2>❓ Ayuda</h2><p class="small" style="margin-top:0">Tutorial, guía de cada pantalla y glosario de palabras financieras.</p><button class="btn full" onclick="openAyuda()">Abrir ayuda</button></div>
-  <div class="small" style="text-align:center;margin:10px 0 20px">Cuentas Claras v4.7.2 · ${S.movs.length} movimientos</div>`;
+  <div class="slogan" style="margin-top:14px">${SLOGAN()}</div><div class="small" style="text-align:center;margin:0 0 20px">Antiva v4.8 · ${S.movs.length} movimientos</div>`;
   return h;
 }
 let MF=null;
@@ -1716,7 +1726,7 @@ async function invitar(mid,nombre){if(!cloudOK()){closeSheet();return openCuenta
   const m=met(mid);try{const sb=await sbc();const{data,error}=await sb.from('vinculos').insert({tarjeta:m.nombre,adicional_nombre:nombre,cierre:+m.cierre||null,venc:+m.venc||null,cierres:m.cierres||[],codigo:genCod()}).select().single();if(error)throw error;
     CL().vinculos[data.id]={rol:'titular',metodo:mid,nombre,tarjeta:m.nombre,estado:'pendiente',codigo:data.codigo};save();if($('#sheetBg').classList.contains('on')&&MF&&MF.id===mid)drawMetodo();compartirCodigo(data.id);suscribirRT()}catch(x){errDlg('No se pudo crear la invitación',x)}}
 function compartirCodigo(k){const v=CL().vinculos[k];if(!v)return;const cf=CFG();const url=location.origin+location.pathname+'#vincular='+v.codigo+(cf.supabaseUrl?'&u='+encodeURIComponent(cf.supabaseUrl)+'&k='+encodeURIComponent(cf.supabaseKey)+(cf.vapidPublic?'&v='+encodeURIComponent(cf.vapidPublic):''):'');
-  const txt=EN()?`Hi ${v.nombre}! So your expenses with the additional ${v.tarjeta} reach me instantly:\n1) Open this link in Chrome and install the Cuentas Claras app: ${url}\n2) Create your account (Settings ⚙️ → Shared cards).\n3) If it doesn't fill in automatically, enter the code: ${v.codigo}\nThe code expires in 7 days.`:`Hola ${v.nombre}! Para que tus gastos con la ${v.tarjeta} adicional me lleguen al instante:\n1) Abrí este link en Chrome e instalá la app Cuentas Claras: ${url}\n2) Creá tu cuenta (Ajustes ⚙️ → Tarjetas compartidas).\n3) Si no se completa solo, ingresá el código: ${v.codigo}\nEl código vence en 7 días.`;
+  const txt=EN()?`Hi ${v.nombre}! So your expenses with the additional ${v.tarjeta} reach me instantly:\n1) Open this link in Chrome and install the Antiva app: ${url}\n2) Create your account (Settings ⚙️ → Shared cards).\n3) If it doesn't fill in automatically, enter the code: ${v.codigo}\nThe code expires in 7 days.`:`Hola ${v.nombre}! Para que tus gastos con la ${v.tarjeta} adicional me lleguen al instante:\n1) Abrí este link en Chrome e instalá la app Antiva: ${url}\n2) Creá tu cuenta (Ajustes ⚙️ → Tarjetas compartidas).\n3) Si no se completa solo, ingresá el código: ${v.codigo}\nEl código vence en 7 días.`;
   window._ccTxt=txt;
   dlg(`<h3>🔗 Invitación para ${esc(v.nombre)}</h3><div style="text-align:center;font-size:32px;font-weight:800;letter-spacing:6px;margin:8px 0;color:var(--pri)">${v.codigo}</div><p class="small" style="margin-top:0">Mandale este mensaje. Cuando cree su cuenta y use el código, la tarjeta queda vinculada.</p><textarea class="in" rows="6" readonly>${esc(txt)}</textarea>
    <div class="actions"><button class="btn ghost" onclick="dlgClose()">Cerrar</button><button class="btn sec" onclick="navigator.clipboard.writeText(_ccTxt).then(()=>toast('Copiado ✔'),()=>toast('Seleccioná el texto y copialo'))">Copiar</button><a class="btn" style="text-align:center;text-decoration:none" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">WhatsApp</a></div>`)}
@@ -1753,7 +1763,7 @@ const b64u=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';r
 const u8b64u=u=>btoa(String.fromCharCode(...new Uint8Array(u))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 async function activarPush(){try{if(!('serviceWorker' in navigator)||!('PushManager' in window)||!navigator.serviceWorker.controller&&!(await navigator.serviceWorker.getRegistration()))throw new Error('Las notificaciones necesitan la app instalada desde Chrome (no funcionan dentro de otro visor).');
     const vp=CFG().vapidPublic;if(!vp)throw new Error('Falta la clave pública de notificaciones en la configuración del servidor.');
-    const perm=await Notification.requestPermission();if(perm!=='granted')throw new Error('No diste permiso. Activalo en Ajustes del teléfono → Notificaciones → Chrome / Cuentas Claras.');
+    const perm=await Notification.requestPermission();if(perm!=='granted')throw new Error('No diste permiso. Activalo en Ajustes del teléfono → Notificaciones → Chrome / Antiva.');
     const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();if(sub){let ok=false;try{const k=sub.options&&sub.options.applicationServerKey;ok=!!k&&u8b64u(k)===vp.replace(/=+$/,'')}catch(_){}if(!ok){try{await sub.unsubscribe()}catch(_){}sub=null}}if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(vp)});
     const j=sub.toJSON();const sb=await sbc();const row={endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth,lang:EN()?'en':'es'};let{error}=await sb.from('push_subs').upsert(row);if(error&&/lang/.test(error.message||'')){delete row.lang;({error}=await sb.from('push_subs').upsert(row))}if(error)throw error;CL().push=true;save();toast('🔔 Notificaciones activadas');openCuenta()}
   catch(x){dlg(`<h3>No se pudieron activar</h3><p class="small">${esc(errTxt(x))}</p><div class="actions"><button class="btn" onclick="dlgClose()">Cerrar</button></div>`)}}
@@ -1848,7 +1858,7 @@ window.__trCollect=function(){const out=window.__trKeys=window.__trKeys||{};cons
 let SU={lang:'es',mon1:'',mon2:'',tc:''};
 function openSetup(step){const en=SU.lang==='en';const T=(a,b)=>en?b:a;let h=`<div class="grab"></div>`;
   const dots=`<div class="dots">${[0,1,2,3].map(j=>`<i class="${j===step?'on':''}"></i>`).join('')}</div>`;
-  if(step===0)h+=`<div class="slide"><div class="big">🌎</div><h4>Cuentas Claras</h4><p style="text-align:center">Elegí tu idioma · Choose your language</p></div>
+  if(step===0)h+=`<div class="slide"><svg class="splash-logo" viewBox="0 -320 800 325" aria-hidden="true"><path d="M0,0 L50,0 Q200,0 310,-102 L540,-315 L490,-315 Q340,-315 230,-213 Z" fill="var(--ink)"/><path transform="translate(258,0)" d="M0,0 L50,0 Q200,0 310,-102 L540,-315 L490,-315 Q340,-315 230,-213 Z" fill="#7439B8"/></svg><h4>ΛNTIVΛ</h4><p class="slogan">Anticipá tu futuro financiero.<br>Anticipate your financial future.</p><p style="text-align:center">Elegí tu idioma · Choose your language</p></div>
     <div class="list"><div class="it" onclick="SU.lang='es';S.cfg.lang='es';applyLang();openSetup(1)"><div class="ico">🇪🇸</div><div class="tx"><div class="t1">Español</div></div><span>›</span></div><div class="it" onclick="SU.lang='en';S.cfg.lang='en';applyLang();openSetup(1)"><div class="ico">🇺🇸</div><div class="tx"><div class="t1">English</div></div><span>›</span></div></div>`;
   if(step===1)h+=`<h3>${T('¿Cuál es tu moneda principal?','What is your main currency?')}</h3><p class="small" style="margin-top:0">${T('La de tu sueldo y tus gastos del día a día.','The one you earn and spend day to day.')}</p>
     <div class="list">${Object.keys(MONEDAS).map(c=>`<div class="it" onclick="SU.mon1='${c}';openSetup(2)"><div class="ico">${MONEDAS[c][0]}</div><div class="tx"><div class="t1">${MONEDAS[c][en?2:1]}</div><div class="t2">${c}</div></div><span>${SU.mon1===c?'✔':'›'}</span></div>`).join('')}</div>`;
@@ -1862,7 +1872,7 @@ function openSetup(step){const en=SU.lang==='en';const T=(a,b)=>en?b:a;let h=`<d
   $('#sheet').innerHTML='<div data-notr>'+h+dots+'</div>';openSheet();$('#sheetBg').onclick=null}
 function finSetup(){const keep={theme:S.cfg.theme};S=defaults(SU.lang,SU.mon1||'ARS',SU.mon2);Object.assign(S.cfg,keep,{tc:+SU.tc||1,setup:1,bienvenida:1});save();applyLang();
   $('#sheetBg').onclick=function(e){if(e.target===this)closeSheet()};render();
-  const en=EN();$('#sheet').innerHTML=`<div class="grab"></div><div class="slide"><div class="big">👋</div><h4>${en?'Welcome to Cuentas Claras!':'¡Bienvenido a Cuentas Claras!'}</h4><p style="text-align:center">${en?'Your money, organized — no finance degree needed.<br>Want to see how it works? It takes 2 minutes.':'Tu plata ordenada, sin saber de finanzas.<br>¿Querés ver cómo funciona? Son 2 minutos.'}</p></div><div class="actions" style="flex-direction:column"><button class="btn" onclick="openTutorial(0)">📘 ${en?'Watch the tutorial':'Ver el tutorial'}</button><button class="btn sec" onclick="closeSheet();demo()">👀 ${en?'Try it with sample data':'Probar con datos de ejemplo'}</button><button class="btn ghost" onclick="closeSheet()">${en?'Start right away':'Empezar directamente'}</button></div>`;openSheet()}
+  const en=EN();$('#sheet').innerHTML=`<div class="grab"></div><div class="slide"><svg class="splash-logo" viewBox="0 -320 800 325" aria-hidden="true"><path d="M0,0 L50,0 Q200,0 310,-102 L540,-315 L490,-315 Q340,-315 230,-213 Z" fill="var(--ink)"/><path transform="translate(258,0)" d="M0,0 L50,0 Q200,0 310,-102 L540,-315 L490,-315 Q340,-315 230,-213 Z" fill="#7439B8"/></svg><h4>${en?'Welcome to Antiva!':'¡Bienvenido a Antiva!'}</h4><p class="slogan">${SLOGAN()}</p><p style="text-align:center">${en?'Your money, organized — no finance degree needed.<br>Want to see how it works? It takes 2 minutes.':'Tu plata ordenada, sin saber de finanzas.<br>¿Querés ver cómo funciona? Son 2 minutos.'}</p></div><div class="actions" style="flex-direction:column"><button class="btn" onclick="openTutorial(0)">📘 ${en?'Watch the tutorial':'Ver el tutorial'}</button><button class="btn sec" onclick="closeSheet();demo()">👀 ${en?'Try it with sample data':'Probar con datos de ejemplo'}</button><button class="btn ghost" onclick="closeSheet()">${en?'Start right away':'Empezar directamente'}</button></div>`;openSheet()}
 
 /* ============ Ayuda: textos, tutorial, guías y glosario ============ */
 const hi=k=>`<button class="hi" onclick="event.stopPropagation();event.preventDefault();info('${k}')" aria-label="¿Qué es esto?">i</button>`;
@@ -2007,7 +2017,7 @@ const TOURS_EN={nav:[['[data-h=fab]','➕ The most important button','Every time
   ['[data-h=fCat]','4️⃣ On what?','Choose the category. The ones you use most appear first.'],['[data-h=fCuotas]','5️⃣ Installments?','Only for credit cards. Choose how many and the app tells you which statement each one falls in.'],
   ['[data-h=fFecha]','6️⃣ Date and time','Filled in automatically with the current moment. Change them if you\'re recording something from another day. Then tap <b>Save</b>.']]};
 const TUT_EN=[
- ['👋','What is Cuentas Claras for?',`<p>Three things:</p><ul><li><b>Know where your money goes</b>, without spreadsheets.</li><li><b>Never miss a due date</b>: cards, installments, school, utilities.</li><li><b>Plan ahead</b>: see today whether next month will be covered.</li></ul><p>No finance knowledge needed: the app does the math.</p>`],
+ ['👋','What is Antiva for?',`<p>Three things:</p><ul><li><b>Know where your money goes</b>, without spreadsheets.</li><li><b>Never miss a due date</b>: cards, installments, school, utilities.</li><li><b>Plan ahead</b>: see today whether next month will be covered.</li></ul><p>No finance knowledge needed: the app does the math.</p>`],
  ['➕','Recording is the key',`<p>Every time you spend, tap the <b>+</b> button below:</p><ol><li>Choose <b>Expense</b>.</li><li>Type the <b>amount</b>.</li><li>Choose <b>how you paid</b> and <b>on what</b>.</li><li>Tap <b>Save</b>.</li></ol><div class="ej">🛒 <b>Example:</b> groceries 45 with your credit card → <b>+</b> → 45 → Credit card → Groceries → Save. Done in 5 seconds.</div>`],
  ['💳','Credit cards made simple',`<p>Every card has two dates:</p><ul><li><b>Closing date</b>: the day it "cuts off" and builds the statement.</li><li><b>Due date</b>: the last day to pay it.</li></ul><div class="tl"><div style="background:var(--goodSoft)">You buy<br><b>Nov 20</b></div>→<div style="background:var(--warnSoft)">Closing<br><b>Nov 24</b></div>→<div style="background:var(--badSoft)">You pay<br><b>Dec 5</b></div></div><p>If you buy on <b>Nov 26</b> (after closing), you pay it on <b>Jan 5</b>. With <b>installments</b>, the app places each one in its month.</p>`],
  ['💵','Cash',`<p>Withdrawing cash <b>isn't an expense</b>: the money is still yours, it just moves from your account to your wallet.</p><ol><li>When you withdraw: <b>+</b> → <b>Withdrawal</b> (Account → Cash).</li><li>When you spend that cash: <b>+</b> → Expense → Cash.</li></ol><div class="ej">🔎 If you withdrew 100 and recorded 70, the app tells you <b>30 went somewhere you don't know</b>.</div>`],
@@ -2062,7 +2072,7 @@ function openAyuda(){if(TOUR)endTour();const vh=VHLP()[VIEW]||VHLP().inicio;cons
   <button class="btn ghost full mt" onclick="S.cfg.vistos={};S.cfg.ayudaAuto=true;save();closeSheet();toast('Las guías se van a mostrar de nuevo')">🔁 Volver a ver todas las guías</button>
   <div class="small mt" style="text-align:center">Tip: el botón <b class="hi" style="display:inline-block">i</b> en cada sección explica para qué sirve.</div>`;openSheet()}
 const TUT=[
- ['👋','¿Para qué sirve Cuentas Claras?',`<p>Para tres cosas:</p><ul><li><b>Saber en qué se va tu plata</b>, sin planillas.</li><li><b>No olvidarte ningún vencimiento</b>: tarjetas, cuotas, colegio, servicios.</li><li><b>Anticiparte</b>: ver hoy si el mes que viene te alcanza.</li></ul><p>No hace falta saber de finanzas: la app hace las cuentas por vos.</p>`],
+ ['👋','¿Para qué sirve Antiva?',`<p>Para tres cosas:</p><ul><li><b>Saber en qué se va tu plata</b>, sin planillas.</li><li><b>No olvidarte ningún vencimiento</b>: tarjetas, cuotas, colegio, servicios.</li><li><b>Anticiparte</b>: ver hoy si el mes que viene te alcanza.</li></ul><p>No hace falta saber de finanzas: la app hace las cuentas por vos.</p>`],
  ['➕','Anotar es la clave',`<p>Cada vez que gastes, tocá el botón <b>+</b> de abajo:</p><ol><li>Elegí <b>Gasto</b>.</li><li>Escribí el <b>importe</b>.</li><li>Elegí <b>con qué pagaste</b> y <b>en qué</b>.</li><li>Tocá <b>Guardar</b>.</li></ol><div class="ej">🛒 <b>Ejemplo:</b> súper $45.000 con Visa → <b>+</b> → 45000 → Visa → Supermercado → Guardar. Listo, 5 segundos.</div>`],
  ['💳','Tarjetas sin misterio',`<p>Toda tarjeta tiene dos fechas:</p><ul><li><b>Cierre</b>: el día que "corta" y arma el resumen.</li><li><b>Vencimiento</b>: el último día para pagarlo.</li></ul><div class="tl"><div style="background:var(--goodSoft)">Comprás<br><b>20/11</b></div>→<div style="background:var(--warnSoft)">Cierre<br><b>24/11</b></div>→<div style="background:var(--badSoft)">Pagás<br><b>5/12</b></div></div><p>Si comprás el <b>26/11</b> (después del cierre), lo pagás recién el <b>5/1</b>. En <b>cuotas</b>, la app reparte cada cuota en su mes.</p>`],
  ['💵','El efectivo',`<p>Sacar plata del cajero <b>no es un gasto</b>: la plata sigue siendo tuya, solo pasa de la cuenta a la billetera.</p><ol><li>Al sacar: <b>+</b> → <b>Extracción</b> (Cuenta → Efectivo).</li><li>Al gastar ese efectivo: <b>+</b> → Gasto → Efectivo.</li></ol><div class="ej">🔎 Si sacaste $100.000 y anotaste $70.000, la app te avisa que <b>$30.000 se fueron sin saber en qué</b>.</div>`],
@@ -2231,7 +2241,7 @@ function openBandeja(){const P=S.pend||[];
   let h=`<div class="grab"></div><h3>📥 Por confirmar<button class="x" onclick="closeSheet()">✕</button></h3>`;
   if(!P.length)h+=`<div class="empty" style="padding:14px 6px"><div class="e">📥</div>No hay movimientos por confirmar.</div>`;
   else h+=`<div class="list">${P.map(it=>{const p=it.p;const d=dupDe(p);return`<div class="it" onclick="confirmarPend('${it.id}')"><div class="ico">${p.cat?cat(p.cat).e:p.tipo==='ingreso'?'💰':p.tipo==='transf'?'🔄':'🧾'}</div><div class="tx"><div class="t1">${esc(p.desc||(p.importe?'Movimiento sin descripción':'No pude leer el importe'))}</div><div class="t2">${fdia(p.fecha)}${p.hora?' '+p.hora:''} · ${p.metodo&&met(p.metodo)?esc(met(p.metodo).nombre):'medio sin detectar'}${p.cuotas>1?' · '+p.cuotas+' cuotas':''}</div>${d?`<div class="t2 neg">⚠️ Parecido a "${esc(d.desc||cat(d.cat).nombre)}" del ${fdia(d.fecha)}</div>`:''}</div><div class="am ${p.tipo==='ingreso'?'pos':''}">${p.importe?fmt(p.importe,p.moneda):'—'}<div style="margin-top:3px;display:flex;gap:4px;justify-content:flex-end"><button class="btn sm ghost" onclick="event.stopPropagation();verLeido('${it.id}')" aria-label="Ver lo leído">🔎</button><button class="btn sm ghost" onclick="event.stopPropagation();descartarPend('${it.id}')">Descartar</button></div></div></div>`}).join('')}</div><div class="small mt">Tocá un movimiento para revisarlo, elegir el concepto y guardarlo.</div>`;
-  h+=`<div class="card mt" style="box-shadow:none;border:1px solid var(--line)"><b>¿Cómo se cargan solos?</b><p class="small" style="margin:6px 0 0">Después de pagar o transferir, en la app del banco o billetera tocá <b>Compartir comprobante</b> y elegí <b>Cuentas Claras</b>. También sirve compartir el texto de un aviso o un mail.</p>
+  h+=`<div class="card mt" style="box-shadow:none;border:1px solid var(--line)"><b>¿Cómo se cargan solos?</b><p class="small" style="margin:6px 0 0">Después de pagar o transferir, en la app del banco o billetera tocá <b>Compartir comprobante</b> y elegí <b>Antiva</b>. También sirve compartir el texto de un aviso o un mail.</p>
    <div class="two mt"><label class="btn sec sm" style="text-align:center">📎 Elegir comprobante<input type="file" accept="application/pdf,image/*,text/plain" style="display:none" onchange="procesarArchivos([...this.files],'archivo')"></label><button class="btn sec sm" onclick="pegarAviso()">📋 Pegar texto</button></div></div>`;
   $('#sheet').innerHTML=h;openSheet()}
 function pegarAviso(){dlg(`<h3>📋 Pegar texto de un aviso</h3><p class="small" style="margin-top:0">Pegá el texto de la notificación, del mail o del comprobante.</p><textarea class="in" id="avisoTxt" rows="6" placeholder="Pagaste $ 3.500 a Kiosco El Sol con tu dinero en Mercado Pago"></textarea>
@@ -2279,7 +2289,7 @@ cloudInit();
   if(q.get('share'))setTimeout(recibirCompartido,500);else if(a==='gasto')setTimeout(()=>openMov(),400);else if(a==='bandeja')setTimeout(openBandeja,400)})();
 trInit();
 if(!S.cfg.setup){setTimeout(()=>openSetup(0),250)}
-else if(!S.movs.length&&!S.cfg.bienvenida){S.cfg.bienvenida=1;save();setTimeout(()=>{$('#sheet').innerHTML=`<div class="grab"></div><div class="slide"><div class="big">👋</div><h4>¡Bienvenido a Cuentas Claras!</h4><p style="text-align:center">Tu plata ordenada, sin saber de finanzas.<br>¿Querés ver cómo funciona? Son 2 minutos.</p></div><div class="actions" style="flex-direction:column"><button class="btn" onclick="openTutorial(0)">📘 Ver el tutorial</button><button class="btn sec" onclick="closeSheet();demo()">👀 Probar con datos de ejemplo</button><button class="btn ghost" onclick="closeSheet()">Empezar directamente</button></div>`;openSheet()},300)}
+else if(!S.movs.length&&!S.cfg.bienvenida){S.cfg.bienvenida=1;save();setTimeout(()=>{$('#sheet').innerHTML=`<div class="grab"></div><div class="slide"><svg class="splash-logo" viewBox="0 -320 800 325" aria-hidden="true"><path d="M0,0 L50,0 Q200,0 310,-102 L540,-315 L490,-315 Q340,-315 230,-213 Z" fill="var(--ink)"/><path transform="translate(258,0)" d="M0,0 L50,0 Q200,0 310,-102 L540,-315 L490,-315 Q340,-315 230,-213 Z" fill="#7439B8"/></svg><h4>¡Bienvenido a Antiva!</h4><p class="slogan">Anticipá tu futuro financiero.</p><p style="text-align:center">Tu plata ordenada, sin saber de finanzas.<br>¿Querés ver cómo funciona? Son 2 minutos.</p></div><div class="actions" style="flex-direction:column"><button class="btn" onclick="openTutorial(0)">📘 Ver el tutorial</button><button class="btn sec" onclick="closeSheet();demo()">👀 Probar con datos de ejemplo</button><button class="btn ghost" onclick="closeSheet()">Empezar directamente</button></div>`;openSheet()},300)}
 </script>
 </body>
 </html>
